@@ -6,10 +6,8 @@
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
-    using System;
     using System.Security.Cryptography;
-    using System.Text;
-    using System.Threading.Tasks;
+    
     public class AuthenticationDataService
     {
         private BookStoreContext _dbContext;
@@ -17,38 +15,8 @@
         {
             this._dbContext = dbContext;
         }
-        //public async Task<User> LogInUser(int userId, string password)
-        //{
-        //    User user = new User();
-        //    try
-        //    {
-        //        var validuser = await _dbContext.Users.Where(c => c.UserId == userId).SingleOrDefaultAsync();
-        //        if (validuser == null)
-        //        {
-        //            throw new Exception("Invalid Username or Password");
-        //        }
-        //        else if (validuser.IsActive == false)
-        //        {
-        //            throw new Exception("User is inactive");
-        //        }
-        //        else if (GetHash(password) == validuser.Password)
-        //        {
-        //            user.FullName = validuser.FullName;
-        //            user.Email = validuser.Email;
-        //            return user;
-        //        }
-        //        else
-        //        {
-        //            throw new Exception("Invalid Username or Password");
-        //        }
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        throw new Exception(e.Message);
-        //    }
-        //}
-
-        public async Task<User> LogInUser(string userIdOrEmail, string password)
+       
+          public async Task<User> ValidateUser(string userIdOrEmail, string password)
         {
             User user = new User();
             try
@@ -56,21 +24,24 @@
                 var validuser = await _dbContext.Users.FirstOrDefaultAsync(c => c.UserId.ToString() == userIdOrEmail || c.Email == userIdOrEmail);
                 if (validuser == null)
                 {
-                    throw new Exception("Invalid Username or Password");
+                    throw new Exception("Username and password are required fields");
                 }
-                else if (validuser.IsActive == false)
-                {
-                    throw new Exception("User is inactive");
-                }
+               
                 else if (GetHash(password) == validuser.Password)
-                {
-                    user.FullName = validuser.FullName;
-                    user.Email = validuser.Email;
-                    return user;
+                { if (validuser.IsActive == true)
+                    {
+                        user.FullName = validuser.FullName;
+                        user.Email = validuser.Email;
+                        return user;
+                    }
+                    else
+                    {
+                        throw new Exception("Your account is currently inactive. Please contact an administrator to reactivate your account.");
+                    }
                 }
-                else
+                else 
                 {
-                    throw new Exception("Invalid Username or Password");
+                    throw new Exception("Invalid login credentials. Please try again");
                 }
             }
             catch (Exception e)
@@ -78,19 +49,21 @@
                 throw new Exception(e.Message);
             }
         }
+         
+         
+         
 
 
-
-
-        public async Task<User> RegisterUser(int userId, string password)
+        public async Task<User> RegisterUser(string userIdOrEmail, string password)
         {
             try
             {
-                var user = await _dbContext.Users.FindAsync(userId);
+                var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.UserId.ToString() == userIdOrEmail || u.Email == userIdOrEmail);
                 if (user == null)
                 {
-                    throw new Exception("User not found");
+                    throw new Exception("Invalid username or password");
                 }
+                
                 var passwordHash = GetHash(password);
                 user.Password = passwordHash;
                 await _dbContext.SaveChangesAsync();
@@ -101,6 +74,7 @@
                 throw new Exception(ex.Message);
             }
         }
+
 
         private string GetHash(string password)
         {

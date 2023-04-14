@@ -15,6 +15,7 @@ namespace DAL.Models
 
         public int RoleId { get; set; }
         public string Role1 { get; set; }
+
         [JsonIgnore]
         public virtual ICollection<UserRole> UserRoles { get; set; }
         [JsonIgnore]

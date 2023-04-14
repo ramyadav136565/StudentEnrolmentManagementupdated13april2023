@@ -10,6 +10,7 @@ namespace DAL.Models
     {
         public University()
         {
+            BookAllocations = new HashSet<BookAllocation>();
             Invoices = new HashSet<Invoice>();
             Students = new HashSet<Student>();
         }
@@ -18,7 +19,8 @@ namespace DAL.Models
         public string Name { get; set; }
         public string Address { get; set; }
         public bool IsDeleted { get; set; }
-
+        [JsonIgnore]
+        public virtual ICollection<BookAllocation> BookAllocations { get; set; }
         [JsonIgnore]
         public virtual ICollection<Invoice> Invoices { get; set; }
         [JsonIgnore]

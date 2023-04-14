@@ -26,7 +26,7 @@
                 throw new Exception(e.Message);
             }
         }
-
+         //active university
         //public async Task<List<University>> ShowAllUniversities()
         //{
         //    try
@@ -47,22 +47,19 @@
             try
             {
                 var university = await _dbContext.Universities.FindAsync(universityId);
-                if (university != null && university.IsDeleted == false)
+                if (university == null)
                 {
-                    return university;
+                    throw new ArgumentException("University record not found");
                 }
-                else if (university == null)
+                if (university.IsDeleted)
                 {
-                    throw new Exception("University record not found");
+                    throw new ArgumentException("Sorry, the university you are looking for is no longer active");
                 }
-                else
-                {
-                    throw new Exception("University record has been deleted");
-                }
+                return university;
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                throw new Exception("An error occurred while searching for the university", ex);
             }
         }
 

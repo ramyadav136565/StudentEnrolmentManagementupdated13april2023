@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+
 #nullable disable
 
 namespace DAL.Models
@@ -10,9 +11,13 @@ namespace DAL.Models
         public int SerialNo { get; set; }
         public int StudentId { get; set; }
         public int BookId { get; set; }
+        public int UniversityId { get; set; }
+
         [JsonIgnore]
         public virtual Book Book { get; set; }
         [JsonIgnore]
         public virtual Student Student { get; set; }
+        [JsonIgnore]
+        public virtual University University { get; set; }
     }
 }

@@ -65,15 +65,8 @@
         {
             try
             {
-                var existingBook = await _dbContext.Books.FirstOrDefaultAsync(b => b.BookName == book.BookName && b.BookAuthor == book.BookAuthor);
-
-                if (existingBook != null)
-                {
-                    throw new Exception("Book already exists");
-                }
-
                 await _dbContext.Books.AddAsync(book);
-                _dbContext.SaveChanges();
+                await _dbContext.SaveChangesAsync();
                 return book;
             }
             catch (Exception ex)
@@ -81,6 +74,7 @@
                 throw new Exception(ex.Message);
             }
         }
+
         public async Task<Book> UpdateBook(Book book)
         {
             try
@@ -99,9 +93,11 @@
             }
             catch (DbUpdateException ex)
             {
-                throw new Exception("Error...", ex);
+                throw new Exception("An error occurred while updating the book.", ex);
             }
         }
+
+
 
 
 
@@ -118,11 +114,11 @@
                 }
                 else if (book != null && book.IsDeleted == true)
                 {
-                    throw new Exception("Book has already been deleted");
+                    throw new Exception("The specified book is not available");
                 }
                 else
                 {
-                    throw new Exception("Record not Found");
+                    throw new Exception("No matching records found");
                 }
             }
             catch (Exception ex)

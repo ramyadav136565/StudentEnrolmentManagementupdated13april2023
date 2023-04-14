@@ -2,6 +2,7 @@
 {
     using DAL;
     using DAL.Models;
+    using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using System;
     using System.Collections.Generic;
@@ -31,7 +32,7 @@
             }
         }
         [HttpGet]
-        [Route("GetAllocatedBookByStudentId/{studentId}")]
+        [Route("GetAllocatedBooksToStudent/{studentId}")]
         public async Task<IActionResult> GetAllocatedBookByStudentId(int studentId)
         {
             try
@@ -45,13 +46,26 @@
                 return BadRequest(e.Message);
             }
         }
-        [HttpPost]
-        [Route("BookAllocateToStudent/{studentId}/{bookId}")]
-        public async Task<IActionResult> BookAllocateToStudent(int studentId, int bookId)
+        [HttpGet("ShowAllAllocatedBooksTouniversity/{universityIdOrUniversityName}/{term}")]
+        public async Task<IActionResult> GetAllocatedBookByUniversity(string universityIdOrUniversityName,int term)
         {
             try
             {
-                var books = await _bookAllocationService.BookAllocateToStudent(studentId, bookId);
+                var books = await _bookAllocationService.GetAllocatedBookByUniversity(universityIdOrUniversityName,term);
+                return Ok(books);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+            [HttpPost]
+        [Route("BookAllocateToStudent/{studentId}/{bookId}/{universityIdOrUniversityName}")]
+        public async Task<IActionResult> BookAllocateToStudent(int studentId, int bookId, string universityIdOrUniversityName)
+        {
+            try
+            {
+                var books = await _bookAllocationService.BookAllocateToStudent(studentId, bookId, universityIdOrUniversityName);
                 return Ok(books);
             }
             catch (Exception e)

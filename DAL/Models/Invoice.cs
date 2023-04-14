@@ -15,6 +15,7 @@ namespace DAL.Models
         public int Quantity { get; set; }
         public decimal Tax { get; set; }
         public decimal TotalAmount { get; set; }
+
         [JsonIgnore]
         public virtual Book Book { get; set; }
         [JsonIgnore]

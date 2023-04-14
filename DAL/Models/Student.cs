@@ -21,6 +21,7 @@ namespace DAL.Models
         public int Term { get; set; }
         public string Course { get; set; }
         public bool IsDeleted { get; set; }
+
         [JsonIgnore]
         public virtual University University { get; set; }
         [JsonIgnore]

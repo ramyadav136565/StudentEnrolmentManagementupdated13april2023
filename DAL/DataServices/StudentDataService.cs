@@ -62,46 +62,41 @@
                 throw new Exception(ex.Message);
             }
         }
-    
+
         public async Task<Student> AddStudent(Student student)
         {
             try
             {
-                
-                var existingStudent = await _dbContext.Students.FirstOrDefaultAsync(s => s.StudentId==student.StudentId
-                && s.FullName == student.FullName && s.Email == student.Email && s.UniversityId==student.UniversityId);
+                if (student == null)
+                {
+                    throw new ArgumentNullException(nameof(student), "Invalid or null student data provided.");
+                }
+
+
+                var university = await _dbContext.Universities.FindAsync(student.UniversityId);
+
+                if (university == null)
+                {
+                    throw new ArgumentException("The university ID you provided is invalid. Please enter a valid university ID.");
+                }
+
+                var existingStudent = await _dbContext.Students.FirstOrDefaultAsync(s => s.StudentId == student.StudentId
+                    && s.FullName == student.FullName && s.Email == student.Email && s.UniversityId == student.UniversityId);
 
                 if (existingStudent != null)
                 {
-                   
-                    throw new Exception("Student Already Enrolled");
+                    throw new InvalidOperationException("This student is already enrolled in this university.");
                 }
-                else
-                {
-                    await _dbContext.Students.AddAsync(student);
-                    _dbContext.SaveChanges();
-                    return student;
-                }
+                await _dbContext.Students.AddAsync(student);
+                await _dbContext.SaveChangesAsync();
+                return student;
             }
-            catch (Exception ex)
+            catch (DbUpdateException ex)
             {
-                throw new Exception(ex.Message);
+                throw new Exception("An error occurred while saving the student record.", ex);
             }
         }
 
-        //public async Task<Student> AddStudent(Student student)
-        //{
-        //    try
-        //    {
-        //        await _dbContext.Students.AddAsync(student);
-        //        _dbContext.SaveChanges();
-        //        return student;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception(ex.Message);
-        //    }
-        //}
         public async Task<Student> UpdateStudent(Student student)
         {
             try
@@ -138,7 +133,7 @@
                 }
                 else if (student != null && student.IsDeleted == true)
                 {
-                    throw new Exception("Student Record already deleted");
+                    throw new ArgumentException("Sorry, the student you are looking for is no longer active");
                 }
                 else
                 {
@@ -147,7 +142,7 @@
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                throw new Exception("An error occurred while searching for the student",ex);
             }
         }
 

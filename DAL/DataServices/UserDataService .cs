@@ -45,63 +45,19 @@
                 throw new Exception(ex.Message) ;
             }
         }
-        //public async Task<User> AddNewUser(User user)
-        //{
-        //    try
-        //    {
-        //        await _dbContext.Users.AddAsync(user);
-        //        _dbContext.SaveChanges();
-        //        return user;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception(ex.Message);
-        //    }
-        //}
-        //public async Task<User> AddNewUser(User user, int roleId)
-        //{
-        //    try
-        //    {
-        //        // Check if the user already exists
-        //            var existingUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
-        //            if (existingUser != null)
-        //            {
-        //                throw new Exception("User already exists");
-        //            }
-
-        //            // Add the user to the Users table
-        //            await _dbContext.Users.AddAsync(user);
-        //            await _dbContext.SaveChangesAsync();
-
-        //            // Update the UserRole table with the user's role
-        //            UserRole userRole = new UserRole()
-        //            {
-        //                UserId = user.UserId,
-        //                RoleId = roleId
-        //            };
-        //            _dbContext.UserRoles.Add(userRole);
-        //            await _dbContext.SaveChangesAsync();
-
-        //        return user;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        // Log or handle the exception
-        //        throw new Exception(ex.Message);
-        //    }
-        //}
+       
         public async Task<User> AddNewUser(User user)
         {
             try
             {
-                // Check if user with same email already exists
+                
                 var existingUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
                 if (existingUser != null)
                 {
                     throw new Exception("User with this email already exists");
                 }
 
-                // Add new user
+               
                 await _dbContext.Users.AddAsync(user);
                 _dbContext.SaveChanges();
                 return user;
@@ -127,14 +83,14 @@
                     }
                     else
                     {
-                        throw new Exception("User record not found!");
+                        throw new Exception("User not found");
                     }
                 }
-                catch (Exception ex)
-                {
-                    throw new Exception(ex.Message);
-                }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while updating the user's profile", ex);
             }
+        }
         //public async Task<User> DeleteUser(int userId)
         //{
         //    try
@@ -162,7 +118,7 @@
                 var user = await _dbContext.Users.FindAsync(userId);
                 if (user != null && user.IsActive == false)
                 {
-                    throw new Exception("User Is Already Inactive");
+                    throw new ArgumentException("Sorry, the university you are looking for is no longer active");
                 }
                 else if (user != null && user.IsActive == true)
                 {
@@ -177,7 +133,7 @@
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                throw new Exception("An error occurred while searching for the user", ex);
             }
         }
     }

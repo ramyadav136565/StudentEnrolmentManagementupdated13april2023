@@ -64,19 +64,35 @@ namespace DAL.Models
             modelBuilder.Entity<BookAllocation>(entity =>
             {
                 entity.HasKey(e => e.SerialNo)
-                    .HasName("PK__BookAllo__5E5A535FB5C8C4D4");
+                    .HasName("PK__BookAllo__D1FEA253C6383470");
 
                 entity.ToTable("BookAllocation");
+
+                entity.Property(e => e.SerialNo).HasColumnName("serialNo");
+
+                entity.Property(e => e.BookId).HasColumnName("bookId");
+
+                entity.Property(e => e.StudentId).HasColumnName("studentId");
+
+                entity.Property(e => e.UniversityId).HasColumnName("universityId");
 
                 entity.HasOne(d => d.Book)
                     .WithMany(p => p.BookAllocations)
                     .HasForeignKey(d => d.BookId)
-                    .HasConstraintName("FK__BookAlloc__BookI__25518C17");
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__BookAlloc__bookI__32AB8735");
 
                 entity.HasOne(d => d.Student)
                     .WithMany(p => p.BookAllocations)
                     .HasForeignKey(d => d.StudentId)
-                    .HasConstraintName("FK__BookAlloc__Stude__245D67DE");
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__BookAlloc__stude__31B762FC");
+
+                entity.HasOne(d => d.University)
+                    .WithMany(p => p.BookAllocations)
+                    .HasForeignKey(d => d.UniversityId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__BookAlloc__unive__339FAB6E");
             });
 
             modelBuilder.Entity<Invoice>(entity =>

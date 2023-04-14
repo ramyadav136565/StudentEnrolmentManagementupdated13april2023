@@ -75,5 +75,12 @@
                 return NotFound(ex.Message);
             }
         }
+
+        [HttpGet("totalamount")]
+        public async Task<ActionResult<decimal>> GetTotalAmount(string universityIdOrUniversityName, int semester, decimal taxPercentage)
+        {
+            var totalAmount = await _invoiceService.CalculateTotalAmountForUniversity(universityIdOrUniversityName, semester, taxPercentage);
+            return totalAmount;
+        }
     }
 }

@@ -49,38 +49,118 @@
             return books.Cast<object>().ToList();
         }
 
-       
-        public async Task<BookAllocation> BookAllocateToStudent(int studentId, int bookId)
+        public async Task<List<object>> GetAllocatedBookByUniversity(string universityIdOrUniversityName, int term)
         {
-            var book = await _dbContext.Books.SingleOrDefaultAsync(b => b.BookId == bookId && !b.IsDeleted);
+            
+            if (term < 1 || term > 12)
+            {
+                throw new ArgumentException("Please enter valid term");
+            }
+
+            var university = await _dbContext.Universities.FirstOrDefaultAsync(u => u.UniversityId.ToString() == universityIdOrUniversityName || u.Name == universityIdOrUniversityName);
+            if (university == null)
+            {
+                throw new ArgumentException("University does not exist");
+            }
+
+            var books = await _dbContext.BookAllocations
+                .Join(_dbContext.Students,
+                    ba => ba.StudentId,
+                    s => s.StudentId,
+                    (ba, s) => new { BookAllocation = ba, Student = s })
+                .Join(_dbContext.Universities,
+                    bs => bs.Student.UniversityId,
+                    u => u.UniversityId,
+                    (bs, u) => new { bs.Student, University = u, bs.BookAllocation })
+                .Join(_dbContext.Books,
+                    bsu => bsu.BookAllocation.BookId,
+                    b => b.BookId,
+                    (bsu, b) => new { bsu.University, bsu.Student, Book = b })
+                .Where(bsb => (bsb.University.UniversityId.ToString() == universityIdOrUniversityName || bsb.University.Name == universityIdOrUniversityName)
+                    && bsb.Student.Term == term)
+                .Select(bsb => new
+                {
+                    bsb.University.Name,
+                    bsb.Student.StudentId,
+                    bsb.Student.Term,
+                    bsb.Book.BookId,
+                    bsb.Book.BookName,
+                    bsb.Book.BookAuthor
+                })
+                .ToListAsync();
+
+            if (books.Count == 0)
+            {
+                throw new ArgumentException($"No book allocation found for university '{universityIdOrUniversityName}' in term '{term}'");
+            }
+
+            return books.Cast<object>().ToList();
+        }
+
+        public async Task<BookAllocation> BookAllocateToStudent(int studentId, int bookId, string universityIdOrUniversityName)
+        {
+            var university = await _dbContext.Universities
+                .Include(u => u.Students)
+                .FirstOrDefaultAsync(u => u.UniversityId.ToString() == universityIdOrUniversityName || u.Name == universityIdOrUniversityName);
+
+            if (university == null)
+            {
+                throw new ArgumentException($"University with id or name {universityIdOrUniversityName} does not exist.");
+            }
+
+            var book = await _dbContext.Books.FindAsync(bookId);
+
             if (book == null)
             {
-                throw new Exception("Book not found or deleted");
+                throw new ArgumentException($"Book with id {bookId} does not exist.");
+            }
+            else if (book.IsDeleted)
+            {
+                throw new Exception($"Book with id {bookId} is not available. Please contact to admin.");
             }
 
-            var student = await _dbContext.Students.SingleOrDefaultAsync(s => s.StudentId == studentId && !s.IsDeleted);
+            var student = university.Students.FirstOrDefault(s => s.StudentId == studentId);
+
             if (student == null)
             {
-                throw new Exception("Student not found or deleted");
+                throw new ArgumentException($"Student with id {studentId} does not exist in university {university.Name}.");
             }
 
-            var existingAllocation = await _dbContext.BookAllocations
-                .SingleOrDefaultAsync(a => a.StudentId == studentId && a.BookId == bookId);
-            if (existingAllocation != null)
+            var allocation = await _dbContext.BookAllocations
+                .FirstOrDefaultAsync(a => a.BookId == bookId);
+
+            if (allocation == null)
             {
-                throw new Exception("Book already allocated to the student");
+                allocation = new BookAllocation
+                {
+                    BookId = bookId,
+                    StudentId = studentId,
+                    UniversityId = university.UniversityId
+                };
+
+                _dbContext.BookAllocations.Add(allocation);
+                await _dbContext.SaveChangesAsync();
+            }
+            else if (allocation.StudentId == studentId)
+            {
+                throw new Exception($"This book is already allocated to student {studentId}.");
+            }
+            else if (allocation.UniversityId == university.UniversityId)
+            {
+                throw new Exception($"This book is already allocated to a student in university {university.Name}.");
+            }
+            else
+            {
+                allocation.StudentId = studentId;
+                allocation.UniversityId = university.UniversityId;
+                await _dbContext.SaveChangesAsync();
             }
 
-            var bookAllocation = new BookAllocation
-            {
-                StudentId = studentId,
-                BookId = bookId,
-            };
-
-            await _dbContext.BookAllocations.AddAsync(bookAllocation);
-            await _dbContext.SaveChangesAsync();
-            return bookAllocation;
+            return allocation;
         }
+
+
+
         public async Task<BookAllocation> UpdateAllocatedBookToStudent(BookAllocation allocatedBook)
         {
             try
@@ -108,12 +188,12 @@
                 }
                 else
                 {
-                    throw new Exception("Book is marked as deleted.");
+                    throw new Exception("Book is marked as available.");
                 }
             }
             catch (Exception ex)
             {
-                throw new Exception("Same book can not be allocated to same student", ex);
+                throw new Exception("Same book can not be allocated to one student", ex);
             }
         }
 
@@ -144,51 +224,3 @@
     }
 }
 
-
-/*
- 
-public async Task<BookAllocation> AllocateBookToStudent(int studentId, int bookId)
-{
-    try
-    {
-        // Check if the book exists and is available for allocation
-        var book = await _dbContext.Books.FirstOrDefaultAsync(b => b.BookId == bookId && !b.IsDeleted);
-        if (book == null)
-        {
-            throw new Exception("Book not found or has been deleted");
-        }
-
-        // Check if the student exists
-        var student = await _dbContext.Students.FirstOrDefaultAsync(s => s.StudentId == studentId && !s.IsDeleted);
-        if (student == null)
-        {
-            throw new Exception("Student not found or has been deleted");
-        }
-
-        // Check if the student already has the book allocated
-        var existingAllocation = await _dbContext.BookAllocations
-            .FirstOrDefaultAsync(a => a.StudentId == studentId && a.BookId == bookId && !a.IsReturned);
-        if (existingAllocation != null)
-        {
-            throw new Exception("Book already allocated to the student");
-        }
-
-        // Allocate the book to the student
-        var allocation = new BookAllocation
-        {
-            StudentId = studentId,
-            BookId = bookId,
-            AllocationDate = DateTime.UtcNow,
-        };
-        await _dbContext.BookAllocations.AddAsync(allocation);
-        await _dbContext.SaveChangesAsync();
-        return allocation;
-    }
-    catch (Exception ex)
-    {
-        throw new Exception(ex.Message);
-    }
-}
-
- 
- */

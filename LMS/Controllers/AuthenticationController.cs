@@ -44,7 +44,7 @@
             TokenDetail tokenDetail = new TokenDetail();
             try
             {
-                var userData = await _authService.LogInUser(userIdOrEmail, password);
+                var userData = await _authService.ValidateUser(userIdOrEmail, password);
                 if (userData != null)
                 {
                     var token = CreateToken(userData.Email);
@@ -65,11 +65,11 @@
            
         }
         [HttpPost("RegisterUser")]
-        public async Task<IActionResult> RegisterUser(int userId, string password)
+        public async Task<IActionResult> RegisterUser(string userIdOrEmail, string password)
         {
             try
             {
-                var userData = await _authService.RegisterUser(userId,password);
+                var userData = await _authService.RegisterUser(userIdOrEmail, password);
                 if (userData != null)
                 {
                     return Ok(userData);
