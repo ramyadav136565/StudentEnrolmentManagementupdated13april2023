@@ -9,9 +9,11 @@ namespace StudentEnrolmentManagement
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
+    using Microsoft.Extensions.Logging;
     using Microsoft.IdentityModel.Tokens;
     using Microsoft.OpenApi.Models;
     using System;
+    using System.Security.Claims;
     using System.Text;
 
     public class Startup
@@ -32,7 +34,11 @@ namespace StudentEnrolmentManagement
             services.AddTransient(typeof(UniversityDataService));
             services.AddTransient(typeof(BookAllocationDataService));
             services.AddTransient(typeof(AuthenticationDataService));
-           // string Audience = Configuration["JwtSettings:Audience"];
+            //services.AddControllers().AddJsonOptions(options =>
+            //{
+            //    options.JsonSerializerOptions.MaxDepth = 64; 
+            //});
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "myapp", Version = "v1" });

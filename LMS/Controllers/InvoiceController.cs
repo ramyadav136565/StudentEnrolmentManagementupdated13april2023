@@ -48,11 +48,11 @@
 
         [HttpPost]
         [Route("CreateInvoice")]
-        public async Task<IActionResult> CreateInvoice(Invoice invoice)
+        public async Task<IActionResult> CreateInvoice(string universityIdOrUniversityName, int semester, decimal taxPercentage)
         {
             try
             {
-                var invoices = await _invoiceService.CreateInvoice(invoice); //change local variable name
+                var invoices = await _invoiceService.CreateInvoice(universityIdOrUniversityName,  semester,  taxPercentage); //change local variable name
                 return Ok(invoices);
 
             }

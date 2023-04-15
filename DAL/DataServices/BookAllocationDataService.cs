@@ -6,6 +6,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+    
     public class BookAllocationDataService
     {
         private BookStoreContext _dbContext;
@@ -13,7 +14,8 @@
         {
             _dbContext = dbContext;
         }
-        public async Task<List<BookAllocation>> ShowAllAllocatedBooks()
+        
+        public async Task<List<BookAllocation>> ShowAllocatedBooks()
         {
             List<BookAllocation> books;
             try
@@ -26,32 +28,38 @@
                 throw new Exception(e.Message);
             }
         }
-        public async Task<List<object>> GetAllocatedBookByStudentId(int studentId)
+        
+        public async Task<List<object>> GetAllocatedBooskByUniversityIdAndStudentId(int universityId, int studentId)
         {
+            var university = await _dbContext.Universities.FindAsync(universityId);
+            if (university == null)
+            {
+                throw new Exception("Please enter correct universityid");
+            }
+            var student = await _dbContext.Students.FindAsync(studentId);
+            if (student == null || student.UniversityId != universityId)
+            {
+                throw new Exception("Please enter correct studentId and universityId");
+            }
             var books = await _dbContext.BookAllocations
-                .Where(ba => ba.StudentId == studentId)
-                .Join(_dbContext.Students,
-                    ba => ba.StudentId,
-                    s => s.StudentId,
-                    (ba, s) => new { BookAllocation = ba, Student = s })
+                .Where(ba => ba.StudentId == studentId && ba.UniversityId == universityId)
                 .Join(_dbContext.Books,
-                    bs => bs.BookAllocation.BookId,
+                    ba => ba.BookId,
                     b => b.BookId,
-                    (bs, b) => new { bs.Student, Book = b })
-                .Select(bsb => new
-                {
-                    bsb.Student.StudentId,
-                    bsb.Book.BookId,
-                    bsb.Book.BookName,
-                    bsb.Book.BookAuthor
-                })
+                    (ba, b) => new { ba.StudentId, b.BookId, b.BookName, b.BookAuthor })
                 .ToListAsync();
+
+            if (!books.Any())
+            {
+                throw new Exception("No book allocation found for the given university and student");
+            }
+
             return books.Cast<object>().ToList();
         }
-
-        public async Task<List<object>> GetAllocatedBookByUniversity(string universityIdOrUniversityName, int term)
+        
+        public async Task<List<object>> GetAllocatedBooksToUniversity(string universityIdOrUniversityName, int term)
         {
-            
+
             if (term < 1 || term > 12)
             {
                 throw new ArgumentException("Please enter valid term");
@@ -96,20 +104,10 @@
 
             return books.Cast<object>().ToList();
         }
-
-        public async Task<BookAllocation> BookAllocateToStudent(int studentId, int bookId, string universityIdOrUniversityName)
+        
+        public async Task<BookAllocation> AllocateBookToStudent(int studentId, int bookId, int universityId)
         {
-            var university = await _dbContext.Universities
-                .Include(u => u.Students)
-                .FirstOrDefaultAsync(u => u.UniversityId.ToString() == universityIdOrUniversityName || u.Name == universityIdOrUniversityName);
-
-            if (university == null)
-            {
-                throw new ArgumentException($"University with id or name {universityIdOrUniversityName} does not exist.");
-            }
-
             var book = await _dbContext.Books.FindAsync(bookId);
-
             if (book == null)
             {
                 throw new ArgumentException($"Book with id {bookId} does not exist.");
@@ -119,49 +117,33 @@
                 throw new Exception($"Book with id {bookId} is not available. Please contact to admin.");
             }
 
-            var student = university.Students.FirstOrDefault(s => s.StudentId == studentId);
+            var allocation = await _dbContext.BookAllocations.FirstOrDefaultAsync(a => a.BookId == bookId);
+            if (allocation != null && allocation.StudentId == studentId)
+            {
+                throw new Exception($"This book is already allocated to the student .");
+            }
 
+
+            var student = await _dbContext.Students.FirstOrDefaultAsync(s => s.StudentId == studentId && s.UniversityId == universityId);
             if (student == null)
             {
-                throw new ArgumentException($"Student with id {studentId} does not exist in university {university.Name}.");
+                throw new ArgumentException($"Student with id {studentId} does not exist in university with id {universityId}.");
             }
 
-            var allocation = await _dbContext.BookAllocations
-                .FirstOrDefaultAsync(a => a.BookId == bookId);
+            allocation = new BookAllocation
+            {
+                BookId = bookId,
+                StudentId = studentId,
+                UniversityId = universityId
+            };
 
-            if (allocation == null)
-            {
-                allocation = new BookAllocation
-                {
-                    BookId = bookId,
-                    StudentId = studentId,
-                    UniversityId = university.UniversityId
-                };
-
-                _dbContext.BookAllocations.Add(allocation);
-                await _dbContext.SaveChangesAsync();
-            }
-            else if (allocation.StudentId == studentId)
-            {
-                throw new Exception($"This book is already allocated to student {studentId}.");
-            }
-            else if (allocation.UniversityId == university.UniversityId)
-            {
-                throw new Exception($"This book is already allocated to a student in university {university.Name}.");
-            }
-            else
-            {
-                allocation.StudentId = studentId;
-                allocation.UniversityId = university.UniversityId;
-                await _dbContext.SaveChangesAsync();
-            }
+            _dbContext.BookAllocations.Add(allocation);
+            await _dbContext.SaveChangesAsync();
 
             return allocation;
         }
-
-
-
-        public async Task<BookAllocation> UpdateAllocatedBookToStudent(BookAllocation allocatedBook)
+        
+        public async Task<BookAllocation> UpdateAllocatedBooksToStudent(BookAllocation allocatedBook)    //see
         {
             try
             {
@@ -196,24 +178,39 @@
                 throw new Exception("Same book can not be allocated to one student", ex);
             }
         }
-
-
-        public async Task<BookAllocation> DeleteAllocatedBook(int studentId, int bookId)
+        
+        public async Task<string> DeleteAllocatedBook(int universityId, int studentId, int bookId)
         {
             try
             {
+                var university = await _dbContext.Universities.FindAsync(universityId);
+                if (university == null)
+                {
+                    return "Please enter correct universityId or universityName";
+                }
+                var student = await _dbContext.Students.FindAsync(studentId);
+                if (student == null)
+                {
+                    return "Please enter correct studentId";
+                }
+                var book = await _dbContext.Books.FindAsync(bookId);
+                if (book == null)
+                {
+                    return "Please enter correct BookId or BookName";
+                }
                 var studentBook = await _dbContext.BookAllocations
-                    .FirstOrDefaultAsync(ba => ba.StudentId == studentId && ba.BookId == bookId);
+                    .FirstOrDefaultAsync(ba => ba.StudentId == studentId && ba.BookId == bookId && ba.UniversityId == universityId);
 
                 if (studentBook != null)
                 {
                     _dbContext.BookAllocations.Remove(studentBook);
                     await _dbContext.SaveChangesAsync();
-                    return studentBook;
+                    return "The BookDeAllocation has been successfully completed";
+
                 }
                 else
                 {
-                    throw new Exception("BookAllocation not found for the specified student and book");
+                    return $"BookAllocation record not found for student {student.FullName} in the  {university.Name} University .";
                 }
             }
             catch (Exception ex)
@@ -223,4 +220,3 @@
         }
     }
 }
-

@@ -15,8 +15,9 @@
         {
             this._dbContext = dbContext;
         }
-       
-          public async Task<User> ValidateUser(string userIdOrEmail, string password)
+ 
+
+        public async Task<User> ValidateUser(string userIdOrEmail, string password)
         {
             User user = new User();
             try

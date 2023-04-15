@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-
 #nullable disable
 
 namespace DAL.Models
@@ -19,6 +18,7 @@ namespace DAL.Models
         public string? Password { get; set; }
         public bool IsActive { get; set; }
         public int RoleId { get; set; }
+
         [JsonIgnore]
         public virtual Role Role { get; set; }
         [JsonIgnore]

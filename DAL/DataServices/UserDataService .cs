@@ -111,29 +111,59 @@
         //}
 
 
-        public async Task<User> DeleteUser(int userId)
+        //public async Task<string> DeleteUser(int userId)
+        //{
+        //    try
+        //    {
+        //        var user = await _dbContext.Users.FindAsync(userId);
+        //        if (user != null && user.IsActive == false)
+        //        {
+        //            throw new ArgumentException("Sorry, the university you are looking for is no longer active");
+        //        }
+        //        else if (user != null && user.IsActive == true)
+        //        {
+        //            user.IsActive = false;
+        //            _dbContext.SaveChanges();
+        //            return "User id ";
+        //        }
+        //        else
+        //        {
+        //            throw new Exception("Record not Found");
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception("An error occurred while searching for the user", ex);
+        //    }
+        //}
+
+        public async Task<string> DeleteUser(int userId)
         {
             try
             {
                 var user = await _dbContext.Users.FindAsync(userId);
-                if (user != null && user.IsActive == false)
+
+                if (user != null)
                 {
-                    throw new ArgumentException("Sorry, the university you are looking for is no longer active");
-                }
-                else if (user != null && user.IsActive == true)
-                {
-                    user.IsActive = false;
-                    _dbContext.SaveChanges();
-                    return user;
+                    if (!user.IsActive)
+                    {
+                        user.IsActive = true;
+                        await _dbContext.SaveChangesAsync();
+                        return "The user's status has been successfully updated to inactive..";
+                    }
+                    else
+                    {
+                        return "The user  is already inactive.";
+                    }
                 }
                 else
                 {
-                    throw new Exception("Record not Found");
+                    return "user record not found.";
                 }
             }
             catch (Exception ex)
             {
-                throw new Exception("An error occurred while searching for the user", ex);
+                throw new Exception("An error occurred while updating the status of user.", ex);
             }
         }
     }

@@ -101,29 +101,34 @@
 
 
 
-        public async Task<Book> DeleteBook(int bookId)
+        
+        public async Task<string> DeleteBook(int bookId)
         {
             try
             {
                 var book = await _dbContext.Books.FindAsync(bookId);
-                if (book != null && book.IsDeleted == false)
+
+                if (book != null)
                 {
-                    book.IsDeleted = true;
-                    _dbContext.SaveChanges();
-                    return book;
-                }
-                else if (book != null && book.IsDeleted == true)
-                {
-                    throw new Exception("The specified book is not available");
+                    if (!book.IsDeleted)
+                    {
+                        book.IsDeleted = true;
+                        await _dbContext.SaveChangesAsync();
+                        return "The book is deleted successfully.";
+                    }
+                    else
+                    {
+                        return "The book is deleted already.";
+                    }
                 }
                 else
                 {
-                    throw new Exception("No matching records found");
+                    return "The book is not present.";
                 }
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                throw new Exception("An error occurred while updating the status of book.", ex);
             }
         }
 

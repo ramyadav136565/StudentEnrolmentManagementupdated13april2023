@@ -80,8 +80,8 @@
                     throw new ArgumentException("The university ID you provided is invalid. Please enter a valid university ID.");
                 }
 
-                var existingStudent = await _dbContext.Students.FirstOrDefaultAsync(s => s.StudentId == student.StudentId
-                    && s.FullName == student.FullName && s.Email == student.Email && s.UniversityId == student.UniversityId);
+                var existingStudent = await _dbContext.Students.FirstOrDefaultAsync(s => 
+                   s.Email == student.Email && s.UniversityId == student.UniversityId);
 
                 if (existingStudent != null)
                 {
@@ -93,7 +93,7 @@
             }
             catch (DbUpdateException ex)
             {
-                throw new Exception("An error occurred while saving the student record.", ex);
+                throw new Exception(ex.Message);
             }
         }
 
@@ -119,32 +119,39 @@
             }
         }
 
-        public async Task<Student> DeleteStudent(int studentId)
+       
+        public async Task<string> DeleteStudent(int studentId)
         {
             try
             {
                 var student = await _dbContext.Students.FindAsync(studentId);
-                if (student != null && student.IsDeleted == false)
+
+                if (student != null)
                 {
-                    student.IsDeleted = true;
-                    _dbContext.Entry(student).State = EntityState.Modified;
-                    await _dbContext.SaveChangesAsync();
-                    return student;
-                }
-                else if (student != null && student.IsDeleted == true)
-                {
-                    throw new ArgumentException("Sorry, the student you are looking for is no longer active");
+                    if (!student.IsDeleted)
+                    {
+                        student.IsDeleted = true;
+                        await _dbContext.SaveChangesAsync();
+                        return "The student record has been soft-deleted successfully.";
+                    }
+                    else
+                    {
+                        return "The student  is already inactive.";
+                    }
                 }
                 else
                 {
-                    throw new Exception("Student Record not found");
+                    return "Student record not found.";
                 }
             }
             catch (Exception ex)
             {
-                throw new Exception("An error occurred while searching for the student",ex);
+                throw new Exception("An error occurred while deleting the student record.", ex);
             }
         }
+
+
+
 
     }
 }

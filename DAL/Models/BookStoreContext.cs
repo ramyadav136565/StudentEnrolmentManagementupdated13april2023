@@ -101,13 +101,7 @@ namespace DAL.Models
 
                 entity.Property(e => e.InvoiceId).HasColumnName("invoiceId");
 
-                entity.Property(e => e.BookId).HasColumnName("bookId");
-
-                entity.Property(e => e.Quantity).HasColumnName("quantity");
-
                 entity.Property(e => e.Semester).HasColumnName("semester");
-
-                entity.Property(e => e.StudentId).HasColumnName("studentId");
 
                 entity.Property(e => e.Tax)
                     .HasColumnType("decimal(10, 2)")
@@ -119,36 +113,24 @@ namespace DAL.Models
 
                 entity.Property(e => e.UniversityId).HasColumnName("universityId");
 
-                entity.HasOne(d => d.Book)
-                    .WithMany(p => p.Invoices)
-                    .HasForeignKey(d => d.BookId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__invoice__bookId__2B0A656D");
-
-                entity.HasOne(d => d.Student)
-                    .WithMany(p => p.Invoices)
-                    .HasForeignKey(d => d.StudentId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__invoice__student__29221CFB");
-
                 entity.HasOne(d => d.University)
                     .WithMany(p => p.Invoices)
                     .HasForeignKey(d => d.UniversityId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__invoice__univers__2A164134");
+                    .HasConstraintName("FK__invoice__univers__40F9A68C");
             });
 
             modelBuilder.Entity<Role>(entity =>
             {
-                entity.ToTable("Role");
+                entity.ToTable("roles");
 
                 entity.Property(e => e.RoleId).ValueGeneratedNever();
 
-                entity.Property(e => e.Role1)
+                entity.Property(e => e.UserRole)
                     .IsRequired()
                     .HasMaxLength(20)
                     .IsUnicode(false)
-                    .HasColumnName("Role");
+                    .HasColumnName("userRole");
             });
 
             modelBuilder.Entity<Student>(entity =>
@@ -187,6 +169,9 @@ namespace DAL.Models
             {
                 entity.ToTable("University");
 
+                entity.HasIndex(e => e.Name, "unique_Name")
+                    .IsUnique();
+
                 entity.Property(e => e.Address)
                     .IsRequired()
                     .HasMaxLength(100)
@@ -217,11 +202,13 @@ namespace DAL.Models
 
                 entity.Property(e => e.Password).HasMaxLength(100);
 
+                entity.Property(e => e.RoleId).HasDefaultValueSql("((2))");
+
                 entity.HasOne(d => d.Role)
                     .WithMany(p => p.Users)
                     .HasForeignKey(d => d.RoleId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_RoleId");
+                    .HasConstraintName("FK_Role_Id");
             });
 
             modelBuilder.Entity<UserRole>(entity =>

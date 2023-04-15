@@ -107,29 +107,58 @@
             }
         }
 
-        public async Task<University> DeleteUniversity(int universityId)
+        //public async Task<University> DeleteUniversity(int universityId)
+        //{
+        //    try
+        //    {
+        //        var university = await _dbContext.Universities.FindAsync(universityId);
+        //        if (university != null && university.IsDeleted == false)
+        //        {
+        //            university.IsDeleted = true;
+        //            await _dbContext.SaveChangesAsync();
+        //            return university;
+        //        }
+        //        else if (university == null)
+        //        {
+        //            throw new Exception($"University with ID {universityId} not found");
+        //        }
+        //        else
+        //        {
+        //            throw new Exception($"University with ID {universityId} is already deleted");
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception(ex.Message);
+        //    }
+        //}
+        public async Task<string> DeleteUniversity(int universityId)
         {
             try
             {
                 var university = await _dbContext.Universities.FindAsync(universityId);
-                if (university != null && university.IsDeleted == false)
+
+                if (university != null)
                 {
-                    university.IsDeleted = true;
-                    await _dbContext.SaveChangesAsync();
-                    return university;
-                }
-                else if (university == null)
-                {
-                    throw new Exception($"University with ID {universityId} not found");
+                    if (!university.IsDeleted)
+                    {
+                        university.IsDeleted = true;
+                        await _dbContext.SaveChangesAsync();
+                        return "The university has successfully become inactive";
+                    }
+                    else
+                    {
+                        return "The university has successfully become inactive already.";
+                    }
                 }
                 else
                 {
-                    throw new Exception($"University with ID {universityId} is already deleted");
+                    return "The university is not present.";
                 }
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                throw new Exception("An error occurred while updating the status of university.", ex);
             }
         }
 

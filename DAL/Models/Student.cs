@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
+
 #nullable disable
+using System.Text.Json.Serialization;
 
 namespace DAL.Models
 {
@@ -10,7 +11,6 @@ namespace DAL.Models
         public Student()
         {
             BookAllocations = new HashSet<BookAllocation>();
-            Invoices = new HashSet<Invoice>();
         }
 
         public int StudentId { get; set; }
@@ -26,7 +26,5 @@ namespace DAL.Models
         public virtual University University { get; set; }
         [JsonIgnore]
         public virtual ICollection<BookAllocation> BookAllocations { get; set; }
-        [JsonIgnore]
-        public virtual ICollection<Invoice> Invoices { get; set; }
     }
 }

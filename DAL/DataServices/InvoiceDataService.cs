@@ -47,19 +47,69 @@
                 throw new Exception(ex.Message);
             }
         }
-        public async Task<Invoice> CreateInvoice(Invoice invoice)
+        //public async Task<Invoice> CreateInvoice(Invoice invoice)
+        //{
+        //    try
+        //    {
+        //        _dbContext.Invoices.Add(invoice);
+        //       await _dbContext.SaveChangesAsync();
+        //        return invoice;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception(ex.Message);
+        //    }
+        //}
+        public async Task<Invoice> CreateInvoice(string universityIdOrUniversityName, int semester, decimal taxPercentage)
         {
             try
             {
+                var university = await _dbContext.Universities
+                    .FirstOrDefaultAsync(u => u.UniversityId.ToString() == universityIdOrUniversityName || u.Name == universityIdOrUniversityName);
+
+                if (university == null)
+                {
+                    throw new ArgumentException("University not found");
+                }
+
+                var bookAllocations = await _dbContext.BookAllocations
+                    .Include(ba => ba.Book)
+                    .Join(_dbContext.Students, ba => ba.StudentId, s => s.StudentId, (ba, s) => new { BookAllocation = ba, Student = s })
+                    .Where(ba_s => ba_s.Student.UniversityId == university.UniversityId && ba_s.BookAllocation.Student.Term == semester)
+                    .ToListAsync();
+
+                if (bookAllocations.Count == 0)
+                {
+                    throw new ArgumentException("No book allocations found for the specified university and semester combination");
+                }
+
+                var Amount = bookAllocations.Sum(ba_s => ba_s.BookAllocation.Book.BookPrice);
+                var taxAmount = Amount * taxPercentage / 100;
+                var totalAmount = Amount + taxAmount;
+
+                var invoice = new Invoice
+                {
+                   
+                    UniversityId = university.UniversityId,
+                    Semester = semester,
+                    Tax = taxPercentage,
+                    TotalAmount = totalAmount
+
+                };
+
+                // Save the invoice to the database
                 _dbContext.Invoices.Add(invoice);
-               await _dbContext.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync();
+
                 return invoice;
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+             throw new Exception(ex.InnerException.Message);
             }
         }
+
+
         public async Task<Invoice> UpdateInvoice(Invoice invoice)
         {
             try

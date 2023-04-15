@@ -1,14 +1,15 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 
 #nullable disable
 
 namespace DAL.Models
 {
-    public partial class Role
+    
+    public partial class Roles
     {
-        public Role()
+        public Roles()
         {
             UserRoles = new HashSet<UserRole>();
             Users = new HashSet<User>();
@@ -16,9 +17,8 @@ namespace DAL.Models
 
         public int RoleId { get; set; }
         public string UserRole { get; set; }
-        [JsonIgnore]
+
         public virtual ICollection<UserRole> UserRoles { get; set; }
-        [JsonIgnore]
         public virtual ICollection<User> Users { get; set; }
     }
 }

@@ -7,7 +7,7 @@
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    //[Authorize]
+   // [Authorize(Roles="Admin")]
     [ApiController]
     public class StudentController : ControllerBase
     {
@@ -73,17 +73,30 @@
                 return NotFound(ex.Message);
             }
         }
-        [HttpDelete("DeleteStudent/{id}")]
+        //[HttpDelete("DeleteStudent/{studentId}")]
+        //public async Task<IActionResult> DeleteStudent(int studentId)
+        //{
+        //    try
+        //    {
+        //        var student = await _studentService.DeleteStudent(studentId);
+        //        return Ok(student);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return NotFound(ex.Message);
+        //    }
+        //}
+        [HttpDelete("DeleteStudent/{studentId}")]
         public async Task<IActionResult> DeleteStudent(int studentId)
         {
             try
             {
-                var student = await _studentService.DeleteStudent(studentId);
-                return Ok(student);
+                var result = await _studentService.DeleteStudent(studentId);
+                return Ok(result);
             }
             catch (Exception ex)
             {
-                return NotFound(ex.Message);
+                throw new Exception("An error occurred while deleting the student record.",ex);
             }
         }
     }

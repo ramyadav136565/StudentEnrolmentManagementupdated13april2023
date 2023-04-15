@@ -15,14 +15,15 @@
         {
             _bookAllocationService = bookAllocationService;
         }
+
         [HttpGet]
-        [Route("ShowAllAllocatedBooks")]
-        public async Task<IActionResult> ShowAllAllocatedBooks()
+        [Route("ShowAllocatedBooks")]
+        public async Task<IActionResult> ShowAllocatedBooks()
         {
             List<BookAllocation> books;
             try
             {
-                books = await _bookAllocationService.ShowAllAllocatedBooks();
+                books = await _bookAllocationService.ShowAllocatedBooks();
                 return Ok(books);
 
             }
@@ -31,13 +32,15 @@
                 return BadRequest(e.Message);
             }
         }
+
+
         [HttpGet]
-        [Route("GetAllocatedBooksToStudent/{studentId}")]
-        public async Task<IActionResult> GetAllocatedBookByStudentId(int studentId)
+        [Route("GetAllocatedBooskByUniversityIdAndStudentId/{universityid}/{studentId}")]
+        public async Task<IActionResult> GetAllocatedBooskByUniversityIdAndStudentId(int universityid, int studentId)
         {
             try
             {
-                var books = await _bookAllocationService.GetAllocatedBookByStudentId(studentId);
+                var books = await _bookAllocationService.GetAllocatedBooskByUniversityIdAndStudentId(universityid, studentId);
                 return Ok(books);
 
             }
@@ -46,12 +49,14 @@
                 return BadRequest(e.Message);
             }
         }
-        [HttpGet("ShowAllAllocatedBooksTouniversity/{universityIdOrUniversityName}/{term}")]
-        public async Task<IActionResult> GetAllocatedBookByUniversity(string universityIdOrUniversityName,int term)
+
+
+        [HttpGet("GetAllocatedBooksToUniversity/{universityIdOrUniversityName}/{term}")]
+         public async Task<IActionResult> GetAllocatedBooksToUniversity(string universityIdOrUniversityName,int term)
         {
             try
             {
-                var books = await _bookAllocationService.GetAllocatedBookByUniversity(universityIdOrUniversityName,term);
+                var books = await _bookAllocationService.GetAllocatedBooksToUniversity(universityIdOrUniversityName,term);
                 return Ok(books);
             }
             catch (Exception ex)
@@ -59,13 +64,15 @@
                 throw new Exception(ex.Message);
             }
         }
+
+
             [HttpPost]
-        [Route("BookAllocateToStudent/{studentId}/{bookId}/{universityIdOrUniversityName}")]
-        public async Task<IActionResult> BookAllocateToStudent(int studentId, int bookId, string universityIdOrUniversityName)
+        [Route("AllocateBookToStudent/{studentId}/{bookId}/{universityId}")]
+        public async Task<IActionResult> AllocateBookToStudent(int studentId, int bookId, int universityId)
         {
             try
             {
-                var books = await _bookAllocationService.BookAllocateToStudent(studentId, bookId, universityIdOrUniversityName);
+                var books = await _bookAllocationService.AllocateBookToStudent(studentId, bookId, universityId);
                 return Ok(books);
             }
             catch (Exception e)
@@ -74,15 +81,17 @@
             }
         }
 
-        [HttpPut("UpdateAllocatedBookToStudent")]
-        public async Task<IActionResult> UpdateAllocatedBookToStudent([FromBody] BookAllocation allocatedBook)
+
+
+        [HttpPut("UpdateAllocatedBooksToStudent")]
+        public async Task<IActionResult> UpdateAllocatedBooksToStudent([FromBody] BookAllocation allocatedBook)
         {
             BookAllocation updateAllocatedBook;
             try
             {
 
 
-                updateAllocatedBook = await _bookAllocationService.UpdateAllocatedBookToStudent(allocatedBook);
+                updateAllocatedBook = await _bookAllocationService.UpdateAllocatedBooksToStudent(allocatedBook);
                 return Ok(updateAllocatedBook);
             }
             catch (Exception ex)
@@ -90,12 +99,14 @@
                 return NotFound(ex.Message);
             }
         }
-        [HttpDelete("DeleteAllocatedBook/{studentId}/{bookId}")]
-        public async Task<IActionResult> DeleteAllocatedBook(int studentId,int bookId)
+
+
+        [HttpDelete("DeleteAllocatedBook/{universityId}/{studentId}/{bookId}")]
+        public async Task<IActionResult> DeleteAllocatedBook(int universityId, int studentId,int bookId)
         {
             try
             {
-                var Deallocatebook = await _bookAllocationService.DeleteAllocatedBook(studentId,bookId);
+                var Deallocatebook = await _bookAllocationService.DeleteAllocatedBook(universityId,studentId, bookId);
                 return Ok(Deallocatebook);
             }
             catch (Exception ex)
