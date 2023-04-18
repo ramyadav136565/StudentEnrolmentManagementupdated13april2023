@@ -2,17 +2,24 @@
 {
     using DAL.Models;
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Configuration;
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
     public class InvoiceDataService
     {
+
+        private IConfiguration _config;
+
         private BookStoreContext _dbContext;
-        public InvoiceDataService(BookStoreContext dbContext)
+        public InvoiceDataService(BookStoreContext dbContext, IConfiguration config)
         {
             _dbContext = dbContext;
+            _config = config;
         }
+        
+
         public async Task<List<Invoice>> ShowAllInvoices()
         {
             List<Invoice> invoices;
@@ -47,67 +54,97 @@
                 throw new Exception(ex.Message);
             }
         }
-        //public async Task<Invoice> CreateInvoice(Invoice invoice)
-        //{
-        //    try
-        //    {
-        //        _dbContext.Invoices.Add(invoice);
-        //       await _dbContext.SaveChangesAsync();
-        //        return invoice;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception(ex.Message);
-        //    }
-        //}
-        public async Task<Invoice> CreateInvoice(string universityIdOrUniversityName, int semester, decimal taxPercentage)
-        {
-            try
+        
+            public async Task<Invoice> CreateInvoice(int universityId, int semester)
             {
-                var university = await _dbContext.Universities
-                    .FirstOrDefaultAsync(u => u.UniversityId.ToString() == universityIdOrUniversityName || u.Name == universityIdOrUniversityName);
-
-                if (university == null)
+                try
                 {
-                    throw new ArgumentException("University not found");
-                }
+                    var university = await _dbContext.Universities
+                        .FirstOrDefaultAsync(u => u.UniversityId == universityId);
 
-                var bookAllocations = await _dbContext.BookAllocations
-                    .Include(ba => ba.Book)
-                    .Join(_dbContext.Students, ba => ba.StudentId, s => s.StudentId, (ba, s) => new { BookAllocation = ba, Student = s })
-                    .Where(ba_s => ba_s.Student.UniversityId == university.UniversityId && ba_s.BookAllocation.Student.Term == semester)
-                    .ToListAsync();
+                    if (university == null)
+                    {
+                        throw new ArgumentException("University not found");
+                    }
 
-                if (bookAllocations.Count == 0)
-                {
-                    throw new ArgumentException("No book allocations found for the specified university and semester combination");
-                }
+                    var bookAllocations = await _dbContext.BookAllocations
+                        .Include(ba => ba.Book)
+                        .Join(_dbContext.Students, ba => ba.StudentId, s => s.StudentId, (ba, s) => new { BookAllocation = ba, Student = s })
+                        .Where(ba_s => ba_s.Student.UniversityId == university.UniversityId && ba_s.BookAllocation.Student.Term == semester)
+                        .ToListAsync();
 
-                var Amount = bookAllocations.Sum(ba_s => ba_s.BookAllocation.Book.BookPrice);
-                var taxAmount = Amount * taxPercentage / 100;
-                var totalAmount = Amount + taxAmount;
+                    if (bookAllocations.Count == 0)
+                    {
+                        throw new ArgumentException("No book allocations found for the specified university and semester combination");
+                    }
+                var numberOfBooks = bookAllocations.Count;
+                    var Amount = bookAllocations.Sum(ba_s => ba_s.BookAllocation.Book.BookPrice);
+                    var taxAmount = Amount * 5 / 100;
+                    var totalAmount = Amount + taxAmount;
 
                 var invoice = new Invoice
                 {
-                   
+
                     UniversityId = university.UniversityId,
-                    Semester = semester,
-                    Tax = taxPercentage,
+                    Term = semester,
+                    BookQuantity = numberOfBooks,
+                    Tax = totalAmount- Amount,
                     TotalAmount = totalAmount
 
-                };
+                    };
 
-                // Save the invoice to the database
-                _dbContext.Invoices.Add(invoice);
-                await _dbContext.SaveChangesAsync();
+                    // Save the invoice to the database
+                    _dbContext.Invoices.Add(invoice);
+                    await _dbContext.SaveChangesAsync();
 
-                return invoice;
+                    return invoice;
+                }
+                catch (Exception ex)
+                {
+                 throw new Exception(ex.InnerException.Message);
+                }
             }
-            catch (Exception ex)
+        public async Task<Invoice> GenerateInvoice(int universityId, int semester)
+        {
+            var tax = int.Parse(_config["TexSettings:Tax"]);
+            var university = await _dbContext.Universities
+                .FirstOrDefaultAsync(u => u.UniversityId == universityId);
+
+            if (university == null)
             {
-             throw new Exception(ex.InnerException.Message);
+                throw new ArgumentException("University not found");
             }
+
+            var bookAllocations = await _dbContext.BookAllocations
+                .Include(ba => ba.Book)
+                .Join(_dbContext.Students, ba => ba.StudentId, s => s.StudentId, (ba, s) => new { BookAllocation = ba, Student = s })
+                .Where(ba_s => ba_s.Student.UniversityId == university.UniversityId && ba_s.BookAllocation.Student.Term == semester)
+                .ToListAsync();
+
+            if (bookAllocations.Count == 0)
+            {
+                throw new ArgumentException("No book allocations found for the specified university and semester combination");
+            }
+
+            var numberOfBooksAllocated = bookAllocations.Count;
+            var Amount = bookAllocations.Sum(ba_s => ba_s.BookAllocation.Book.BookPrice);
+            var taxAmount = Amount * tax/ 100;
+            var totalAmount = Amount + taxAmount;
+
+            var invoice = new Invoice
+            {
+                UniversityId = university.UniversityId,
+                Term = semester,
+                 BookQuantity = numberOfBooksAllocated,
+                Tax = totalAmount- Amount,
+                TotalAmount = totalAmount
+            };
+
+            return invoice;
         }
+
+
+
 
 
         public async Task<Invoice> UpdateInvoice(Invoice invoice)
@@ -130,41 +167,7 @@
                 throw new Exception(ex.Message);
             }
         }
-        public async Task<decimal> CalculateTotalAmountForUniversity(string universityIdOrUniversityName, int semester, decimal taxPercentage)
-        {
-            try
-            {
-                var university = await _dbContext.Universities
-                    .FirstOrDefaultAsync(u => u.UniversityId.ToString() == universityIdOrUniversityName || u.Name == universityIdOrUniversityName);
-
-                if (university == null)
-                {
-                    throw new ArgumentException("University not found");
-                }
-
-                var bookAllocations = await _dbContext.BookAllocations
-                    .Include(ba => ba.Book)
-                    .Join(_dbContext.Students, ba => ba.StudentId, s => s.StudentId, (ba, s) => new { BookAllocation = ba, Student = s })
-                    .Where(ba_s => ba_s.Student.UniversityId == university.UniversityId && ba_s.BookAllocation.Student.Term == semester)
-                    .ToListAsync();
-
-                if (bookAllocations.Count == 0)
-                {
-                    throw new ArgumentException("No book allocations found for the specified university and semester combination");
-                }
-
-                var totalAmount = bookAllocations.Sum(ba_s => ba_s.BookAllocation.Book.BookPrice);
-                var taxAmount = totalAmount * taxPercentage / 100;
-                var totalAmountWithTax = totalAmount + taxAmount;
-
-                return totalAmountWithTax;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-               
-            }
-        }
+       
 
 
 

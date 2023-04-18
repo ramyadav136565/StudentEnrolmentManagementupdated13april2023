@@ -105,6 +105,7 @@ namespace StudentEnrolmentManagement
             app.UseRouting();
             app.UseSwagger();
             app.UseSwaggerUI(sw => sw.SwaggerEndpoint("/swagger/v1/swagger.json", "StudentEnrolmentManagement"));
+            app.UseCors(policy => policy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseEndpoints(endpoints =>

@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.Extensions.Configuration;
 
 #nullable disable
 
@@ -8,9 +9,16 @@ namespace DAL.Models
 {
     public partial class BookStoreContext : DbContext
     {
-        public BookStoreContext()
+      
+
+        private IConfiguration _config;
+      
+        public BookStoreContext(IConfiguration config)
         {
+            _config = config;
+               
         }
+
 
         public BookStoreContext(DbContextOptions<BookStoreContext> options)
             : base(options)
@@ -26,15 +34,22 @@ namespace DAL.Models
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<UserRole> UserRoles { get; set; }
 
+        //        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        //        {
+        //            if (!optionsBuilder.IsConfigured)
+        //            {
+        //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+        //                optionsBuilder.UseSqlServer("Server=INBLRVM26590142; Database=BookStore; Trusted_Connection=true");
+        //            }
+        //        }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
             {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseSqlServer("Server=INBLRVM26590142; Database=BookStore; Trusted_Connection=true");
+                optionsBuilder.UseSqlServer(_config.GetConnectionString("DefaultConnection"));
             }
         }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasAnnotation("Relational:Collation", "Latin1_General_CI_AI");
@@ -95,17 +110,44 @@ namespace DAL.Models
                     .HasConstraintName("FK__BookAlloc__unive__339FAB6E");
             });
 
+            //modelBuilder.Entity<Invoice>(entity =>
+            //{
+            //    entity.ToTable("invoice");
+
+            //    entity.Property(e => e.InvoiceId).HasColumnName("invoiceId");
+
+            //    entity.Property(e => e.Term).HasColumnName("term");
+
+            //    entity.Property(e => e.Tax)
+            //        .HasColumnType("decimal(10, 2)")
+            //        .HasColumnName("tax");
+
+            //    entity.Property(e => e.TotalAmount)
+            //        .HasColumnType("decimal(10, 2)")
+            //        .HasColumnName("totalAmount");
+
+            //    entity.Property(e => e.UniversityId).HasColumnName("universityId");
+
+            //    entity.HasOne(d => d.University)
+            //        .WithMany(p => p.Invoices)
+            //        .HasForeignKey(d => d.UniversityId)
+            //        .OnDelete(DeleteBehavior.ClientSetNull)
+            //        .HasConstraintName("FK__invoice__univers__40F9A68C");
+            //});
+
             modelBuilder.Entity<Invoice>(entity =>
             {
                 entity.ToTable("invoice");
 
                 entity.Property(e => e.InvoiceId).HasColumnName("invoiceId");
 
-                entity.Property(e => e.Semester).HasColumnName("semester");
+                entity.Property(e => e.BookQuantity).HasColumnName("bookQuantity");
 
                 entity.Property(e => e.Tax)
                     .HasColumnType("decimal(10, 2)")
                     .HasColumnName("tax");
+
+                entity.Property(e => e.Term).HasColumnName("term");
 
                 entity.Property(e => e.TotalAmount)
                     .HasColumnType("decimal(10, 2)")
@@ -117,7 +159,7 @@ namespace DAL.Models
                     .WithMany(p => p.Invoices)
                     .HasForeignKey(d => d.UniversityId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__invoice__univers__40F9A68C");
+                    .HasConstraintName("FK__invoice__univers__4B7734FF");
             });
 
             modelBuilder.Entity<Role>(entity =>

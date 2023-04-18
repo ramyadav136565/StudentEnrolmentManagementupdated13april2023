@@ -51,10 +51,10 @@
                 {
                     throw new Exception($"Student with ID {studentId} not found.");
                 }
-                if (student.IsDeleted)
-                {
-                    throw new Exception($"Student with ID {studentId} has been deleted.");
-                }
+                //if (student.IsDeleted)
+                //{
+                //    throw new Exception($"Student with ID {studentId} has been deleted.");
+                //}
                 return student;
             }
             catch (Exception ex)
@@ -67,7 +67,7 @@
         {
             try
             {
-                if (student == null)
+                if (student.UniversityId ==0 || student.Email == null || student.Term ==0 || student.Course=="" || student.FullName==null || student.Address==null)
                 {
                     throw new ArgumentNullException(nameof(student), "Invalid or null student data provided.");
                 }
@@ -91,7 +91,7 @@
                 await _dbContext.SaveChangesAsync();
                 return student;
             }
-            catch (DbUpdateException ex)
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
@@ -119,7 +119,31 @@
             }
         }
 
-       
+        //public async Task<Student> DeleteStudent(int studentId)
+        //{
+        //    try
+        //    {
+        //        var student = await _dbContext.Students.FindAsync(studentId);
+        //        if (student != null)
+        //        {
+        //            if (student.IsDeleted)
+        //            {
+        //                throw new ArgumentException("Sorry, the student you are looking for is no longer active");
+        //            }
+        //            student.IsDeleted = true;
+        //            _dbContext.Entry(student).State = EntityState.Modified;
+        //            await _dbContext.SaveChangesAsync();
+        //            return student;
+        //        }
+        //        else
+        //        {
+        //            throw new Exception("Student Record not found");
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception("An error occurred while deleting the student record", ex);
+        //    }
         public async Task<string> DeleteStudent(int studentId)
         {
             try
@@ -149,9 +173,5 @@
                 throw new Exception("An error occurred while deleting the student record.", ex);
             }
         }
-
-
-
-
     }
 }

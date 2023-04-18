@@ -48,11 +48,11 @@
 
         [HttpPost]
         [Route("CreateInvoice")]
-        public async Task<IActionResult> CreateInvoice(string universityIdOrUniversityName, int semester, decimal taxPercentage)
+        public async Task<IActionResult> CreateInvoice(int universityId ,int semester)
         {
             try
             {
-                var invoices = await _invoiceService.CreateInvoice(universityIdOrUniversityName,  semester,  taxPercentage); //change local variable name
+                var invoices = await _invoiceService.CreateInvoice(universityId,  semester ); //change local variable name
                 return Ok(invoices);
 
             }
@@ -61,6 +61,23 @@
                 return BadRequest(e.Message);
             }
         }
+
+        [HttpGet("GenerateInvoice/{universityId}/{semester}")]
+        public async Task<ActionResult<Invoice>> GenerateInvoice(int universityId, int semester)
+        {
+            try
+            {
+                var invoice = await _invoiceService.GenerateInvoice(universityId, semester);
+                return Ok(invoice);
+            }
+            
+            catch (Exception ex)
+            {
+                // Log the exception here
+                return StatusCode(500, "An error occurred while generating the invoice");
+            }
+        }
+
         [HttpPut("UpdateInvoice")]
         public async Task<IActionResult> UpdateInvoice([FromBody] Invoice invoice)
         {
@@ -70,17 +87,17 @@
                 updatedInvoice = await _invoiceService.UpdateInvoice(invoice);
                 return Ok(updatedInvoice);
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                return NotFound(ex.Message);
+                return BadRequest(e.Message);
             }
         }
 
-        [HttpGet("totalamount")]
-        public async Task<ActionResult<decimal>> GetTotalAmount(string universityIdOrUniversityName, int semester, decimal taxPercentage)
-        {
-            var totalAmount = await _invoiceService.CalculateTotalAmountForUniversity(universityIdOrUniversityName, semester, taxPercentage);
-            return totalAmount;
-        }
+        //[HttpGet("totalamount")]
+        //public async Task<ActionResult<decimal>> GetTotalAmount(string universityIdOrUniversityName, int semester, decimal taxPercentage)
+        //{
+        //    var totalAmount = await _invoiceService.CalculateTotalAmountForUniversity(universityIdOrUniversityName, semester, taxPercentage);
+        //    return totalAmount;
+        //}
     }
 }
