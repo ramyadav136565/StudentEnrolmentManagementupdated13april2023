@@ -73,19 +73,8 @@
                 return NotFound(ex.Message);
             }
         }
-        //[HttpDelete("DeleteStudent/{studentId}")]
-        //public async Task<IActionResult> DeleteStudent(int studentId)
-        //{
-        //    try
-        //    {
-        //        var student = await _studentService.DeleteStudent(studentId);
-        //        return Ok(student);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return NotFound(ex.Message);
-        //    }
-        //}
+       
+        
         [HttpDelete("DeleteStudent/{studentId}")]
         public async Task<IActionResult> DeleteStudent(int studentId)
         {
@@ -96,7 +85,7 @@
             }
             catch (Exception ex)
             {
-                throw new Exception("An error occurred while deleting the student record.",ex);
+                throw new Exception("An error occurred while deleting the student record.", ex);
             }
         }
     }

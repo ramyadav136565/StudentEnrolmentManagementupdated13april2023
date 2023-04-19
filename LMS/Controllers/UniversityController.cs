@@ -30,7 +30,7 @@
             }
         }
         [HttpGet]
-        [Route("SearchUniversityById/{UniversityId}")]
+        [Route("SearchUniversityById/{universityId}")]
         public async Task<IActionResult> SearchUniversityById(int universityId)
         {
             try
@@ -43,6 +43,12 @@
                 return BadRequest(e.Message);
             }
         }
+
+
+
+
+
+
         [HttpPost]
         [Route("AddUniversity")]
         public async Task<IActionResult> AddUniversity(University university)
@@ -70,7 +76,7 @@
                 return NotFound(ex.Message);
             }
         }
-        [HttpDelete("DeleteUniversity/{id}")]
+        [HttpDelete("DeleteUniversity/{universityId}")]
         public async Task<IActionResult> DeleteUniversity(int universityId)
         {
             try

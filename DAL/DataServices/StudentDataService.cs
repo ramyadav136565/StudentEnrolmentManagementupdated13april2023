@@ -67,25 +67,31 @@
         {
             try
             {
-                if (student.UniversityId ==0 || student.Email == null || student.Term ==0 || student.Course=="" || student.FullName==null || student.Address==null)
+                if (student.UniversityId == 0 || student.Email== null || student.Term == 0 || student.Course == "" || student.FullName == null || student.Address == null)
                 {
-                    throw new ArgumentNullException(nameof(student), "Invalid or null student data provided.");
+                    throw new ArgumentNullException(nameof(student), "the student data provided appears to be invalid or null");
                 }
+                //if (student==null)
+                //{
+                //    throw new ArgumentNullException(nameof(student), "The student data provided appears to be invalid or null");
+                //}
 
 
-                var university = await _dbContext.Universities.FindAsync(student.UniversityId);
+                //var university = await _dbContext.Universities.FindAsync(student.UniversityId);
 
-                if (university == null)
-                {
-                    throw new ArgumentException("The university ID you provided is invalid. Please enter a valid university ID.");
-                }
+                //if (university == null)
+                //{
+                //    throw new ArgumentException("The university ID you provided is invalid. Please enter a valid university ID.");
+                //}
 
-                var existingStudent = await _dbContext.Students.FirstOrDefaultAsync(s => 
-                   s.Email == student.Email && s.UniversityId == student.UniversityId);
+                //var existingStudent = await _dbContext.Students.FirstOrDefaultAsync(s => 
+                //   s.Email == student.Email && s.UniversityId == student.UniversityId);
+                var existingStudent = await _dbContext.Students.FirstOrDefaultAsync(s =>
+                  s.Email == student.Email);
 
                 if (existingStudent != null)
                 {
-                    throw new InvalidOperationException("This student is already enrolled in this university.");
+                    throw new InvalidOperationException($"The student with {student.Email} is already enrolled in this university.");
                 }
                 await _dbContext.Students.AddAsync(student);
                 await _dbContext.SaveChangesAsync();
@@ -124,26 +130,18 @@
         //    try
         //    {
         //        var student = await _dbContext.Students.FindAsync(studentId);
-        //        if (student != null)
-        //        {
-        //            if (student.IsDeleted)
-        //            {
-        //                throw new ArgumentException("Sorry, the student you are looking for is no longer active");
-        //            }
-        //            student.IsDeleted = true;
-        //            _dbContext.Entry(student).State = EntityState.Modified;
+
+        //            _dbContext.Students.Remove(student);
         //            await _dbContext.SaveChangesAsync();
         //            return student;
-        //        }
-        //        else
-        //        {
-        //            throw new Exception("Student Record not found");
-        //        }
+
         //    }
         //    catch (Exception ex)
         //    {
         //        throw new Exception("An error occurred while deleting the student record", ex);
         //    }
+        //}
+
         public async Task<string> DeleteStudent(int studentId)
         {
             try
@@ -156,7 +154,7 @@
                     {
                         student.IsDeleted = true;
                         await _dbContext.SaveChangesAsync();
-                        return "The student record has been soft-deleted successfully.";
+                        return "The student record has been deleted successfully.";
                     }
                     else
                     {

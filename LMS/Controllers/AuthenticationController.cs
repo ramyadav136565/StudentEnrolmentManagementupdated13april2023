@@ -33,18 +33,19 @@
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JwtSettings:Key"]));
             var CredentialInfo = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
+            var ExpireDays = int.Parse(_config["JwtSettings:ExpireDays"]);
             var role = (from user in _dbContext.Users
                             join roles in _dbContext.Roles on user.RoleId equals roles.RoleId
                             where user.UserId.ToString() == userIdOrEmail || user.Email == userIdOrEmail
                             select roles.UserRole).FirstOrDefault().ToString();
 
             var claim = new List<Claim>();
+
             claim.Add(new Claim(ClaimTypes.Role, role));
             var token = new JwtSecurityToken(
             issuer: _config["JwtSettings:Issuer"],
             audience: _config["JwtSettings:Audience"],
-            expires: DateTime.Now.AddDays(5),
+            expires: DateTime.Now.AddDays(ExpireDays),
             claims: claim,
             signingCredentials: CredentialInfo
             );

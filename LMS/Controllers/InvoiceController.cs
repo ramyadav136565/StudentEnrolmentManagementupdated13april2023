@@ -74,7 +74,7 @@
             catch (Exception ex)
             {
                 // Log the exception here
-                return StatusCode(500, "An error occurred while generating the invoice");
+                return BadRequest(ex.Message); ;
             }
         }
 

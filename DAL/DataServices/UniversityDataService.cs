@@ -42,6 +42,27 @@
         //    }
         //}
 
+        //public async Task<University> SearchUniversityByuniversityId(int universityId)
+        //{
+        //    try
+        //    {
+        //        var university = await _dbContext.Universities.FindAsync(universityId);
+        //        if (university == null)
+        //        {
+        //            throw new Exception("University record not found");
+        //        }
+        //        //if (university.IsDeleted)
+        //        //{
+        //        //    throw new ArgumentException("Sorry, the university you are looking for is no longer active");
+        //        //}
+        //        return university;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception("An error occurred while searching for the university", ex);
+        //    }
+        //}
+
         public async Task<University> SearchUniversityById(int universityId)
         {
             try
@@ -49,19 +70,17 @@
                 var university = await _dbContext.Universities.FindAsync(universityId);
                 if (university == null)
                 {
-                    throw new ArgumentException("University record not found");
+                    throw new Exception($"University with ID {universityId} not found.");
                 }
-                if (university.IsDeleted)
-                {
-                    throw new ArgumentException("Sorry, the university you are looking for is no longer active");
-                }
+               
                 return university;
             }
             catch (Exception ex)
             {
-                throw new Exception("An error occurred while searching for the university", ex);
+                throw new Exception(ex.Message);
             }
         }
+
 
 
         public async Task<University> AddUniversity(University university)
@@ -148,7 +167,7 @@
                     }
                     else
                     {
-                        return "The university has successfully become inactive already.";
+                        return $"The university with {university.UniversityId} inactive already."; 
                     }
                 }
                 else

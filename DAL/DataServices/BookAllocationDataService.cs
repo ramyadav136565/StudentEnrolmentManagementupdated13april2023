@@ -56,55 +56,75 @@
 
             return books.Cast<object>().ToList();
         }
-        
+
+        //public async Task<List<object>> GetAllocatedBooksToUniversity(string universityIdOrUniversityName, int term)
+        //{
+
+        //    if (term < 1 || term > 12)
+        //    {
+        //        throw new ArgumentException("Please enter valid term");
+        //    }
+
+        //    var university = await _dbContext.Universities.FirstOrDefaultAsync(u => u.UniversityId.ToString() == universityIdOrUniversityName || u.Name == universityIdOrUniversityName);
+        //    if (university == null)
+        //    {
+        //        throw new ArgumentException("University does not exist");
+        //    }
+
+        //    var books = await _dbContext.BookAllocations
+        //        .Join(_dbContext.Students,
+        //            ba => ba.StudentId,
+        //            s => s.StudentId,
+        //            (ba, s) => new { BookAllocation = ba, Student = s })
+        //        .Join(_dbContext.Universities,
+        //            bs => bs.Student.UniversityId,
+        //            u => u.UniversityId,
+        //            (bs, u) => new { bs.Student, University = u, bs.BookAllocation })
+        //        .Join(_dbContext.Books,
+        //            bsu => bsu.BookAllocation.BookId,
+        //            b => b.BookId,
+        //            (bsu, b) => new { bsu.University, bsu.Student, Book = b })
+        //        .Where(bsb => (bsb.University.UniversityId.ToString() == universityIdOrUniversityName || bsb.University.Name == universityIdOrUniversityName)
+        //            && bsb.Student.Term == term)
+        //        .Select(bsb => new
+        //        {
+        //            bsb.University.Name,
+        //            bsb.Student.StudentId,
+        //            bsb.Student.Term,
+        //            bsb.Book.BookId,
+        //            bsb.Book.BookName,
+        //            bsb.Book.BookAuthor
+        //        })
+        //        .ToListAsync();
+
+        //    if (books.Count == 0)
+        //    {
+        //        throw new ArgumentException($"No book allocation found for university '{universityIdOrUniversityName}' in term '{term}'");
+        //    }
+
+        //    return books.Cast<object>().ToList();
+        //}
+
         public async Task<List<object>> GetAllocatedBooksToUniversity(string universityIdOrUniversityName, int term)
         {
-
-            if (term < 1 || term > 12)
-            {
-                throw new ArgumentException("Please enter valid term");
-            }
-
-            var university = await _dbContext.Universities.FirstOrDefaultAsync(u => u.UniversityId.ToString() == universityIdOrUniversityName || u.Name == universityIdOrUniversityName);
-            if (university == null)
-            {
-                throw new ArgumentException("University does not exist");
-            }
-
-            var books = await _dbContext.BookAllocations
-                .Join(_dbContext.Students,
-                    ba => ba.StudentId,
-                    s => s.StudentId,
-                    (ba, s) => new { BookAllocation = ba, Student = s })
-                .Join(_dbContext.Universities,
-                    bs => bs.Student.UniversityId,
-                    u => u.UniversityId,
-                    (bs, u) => new { bs.Student, University = u, bs.BookAllocation })
-                .Join(_dbContext.Books,
-                    bsu => bsu.BookAllocation.BookId,
-                    b => b.BookId,
-                    (bsu, b) => new { bsu.University, bsu.Student, Book = b })
-                .Where(bsb => (bsb.University.UniversityId.ToString() == universityIdOrUniversityName || bsb.University.Name == universityIdOrUniversityName)
-                    && bsb.Student.Term == term)
-                .Select(bsb => new
+            var result = await _dbContext.Universities
+                .Where(u => u.UniversityId.ToString() == universityIdOrUniversityName || u.Name == universityIdOrUniversityName)
+                .SelectMany(u => u.Students.Where(s => s.Term == term), (u, s) => new { University = u, Student = s })
+                .SelectMany(us => us.Student.BookAllocations, (us, ba) => new { us.University, us.Student, BookAllocation = ba })
+                .Select(ba => new
                 {
-                    bsb.University.Name,
-                    bsb.Student.StudentId,
-                    bsb.Student.Term,
-                    bsb.Book.BookId,
-                    bsb.Book.BookName,
-                    bsb.Book.BookAuthor
+                    StudentName = ba.Student.FullName,
+                    StudentEmail = ba.Student.Email,
+                    BookName = ba.BookAllocation.Book.BookName,
+                    BookPrice = ba.BookAllocation.Book.BookPrice,
+                    Course = ba.Student.Course
                 })
                 .ToListAsync();
 
-            if (books.Count == 0)
-            {
-                throw new ArgumentException($"No book allocation found for university '{universityIdOrUniversityName}' in term '{term}'");
-            }
-
-            return books.Cast<object>().ToList();
+            return result.Cast<object>().ToList();
         }
-        
+
+
         public async Task<BookAllocation> AllocateBookToStudent(int studentId, int bookId, int universityId)
         {
             var book = await _dbContext.Books.FindAsync(bookId);
