@@ -109,7 +109,7 @@
             try
             {
                 var existingUniversity = await _dbContext.Universities.FindAsync(university.UniversityId);
-                if (existingUniversity != null && existingUniversity.IsDeleted == false)
+                if (existingUniversity != null )
                 {
                     _dbContext.Entry(existingUniversity).CurrentValues.SetValues(university);
                     await _dbContext.SaveChangesAsync();

@@ -167,10 +167,43 @@
                 throw new Exception(ex.Message);
             }
         }
-       
 
 
 
+        //public async Task<List<InvoiceDetailsDto>> GetInvoiceDetailsAsync(int invoiceId)
+        //{
+        //    try
+        //    {
+        //        var query = from inv in _dbContext.Invoices
+        //                    join uni in _dbContext.Universities on inv.UniversityId equals uni.UniversityId
+        //                    join ba in _dbContext.BookAllocations on uni.UniversityId equals ba.University.UniversityId
+        //                    join stu in _dbContext.Students on ba.StudentId equals stu.StudentId
+        //                    join bk in _dbContext.Books on ba.BookId equals bk.BookId
+        //                    where inv.InvoiceId == invoiceId && !stu.IsDeleted
+        //                    select new InvoiceDetailsDto
+        //                    {
+        //                        InvoiceId = inv.InvoiceId,
+        //                        UniversityName = uni.Name,
+        //                        Term = inv.Term,
+        //                        BookQuantity = ba.BookQuantity,
+        //                        Tax = inv.Tax,
+        //                        TotalAmount = inv.TotalAmount,
+        //                        StudentFullName = stu.FullName,
+        //                        Email = stu.Email,
+        //                        BookName = bk.BookName,
+        //                        BookPrice = bk.BookPrice,
+        //                        Course = stu.Course
+        //                    };
+        //        var result = await query.ToListAsync();
+        //        return result;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        // Log the exception here
+        //        throw; // Rethrow the exception to the calling code
+        //    }
+        //}
+ 
 
 
     }

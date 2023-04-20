@@ -31,13 +31,13 @@
                 return BadRequest(e.Message);
             }
         }
-        [HttpGet("ActiveUserById/{userId}")]
+        [HttpGet("GetUserById/{userId}")]
       
-        public async Task<IActionResult> ShowUserById(int userId)
+        public async Task<IActionResult> GetUserById(int userId)
         {
             try
             {
-                var user = await _userService.ActiveUserById(userId);
+                var user = await _userService.GetUserById(userId);
                 return Ok(user);
             }
             catch (Exception e)

@@ -46,14 +46,12 @@
             try
             {
                 var book = await _dbContext.Books.FindAsync(bookId);
-                if (book != null && book.IsDeleted == false)
+                if (book == null)
                 {
-                    return book;
+                    throw new Exception($"Book with ID {bookId} not found.");
                 }
-                else
-                {
-                    throw new Exception("Book not found");
-                }
+                return book;
+               
             }
             catch (Exception ex)
             {
@@ -65,6 +63,13 @@
         {
             try
             {
+
+                if (await _dbContext.Books.AnyAsync(b => b.BookName == book.BookName && b.BookAuthor == book.BookAuthor))
+                {
+                    throw new Exception("A book with the same name and author already exists.");
+                }
+
+
                 await _dbContext.Books.AddAsync(book);
                 await _dbContext.SaveChangesAsync();
                 return book;
@@ -74,6 +79,8 @@
                 throw new Exception(ex.Message);
             }
         }
+
+
 
         public async Task<Book> UpdateBook(Book book)
         {

@@ -71,27 +71,13 @@
                 {
                     throw new ArgumentNullException(nameof(student), "the student data provided appears to be invalid or null");
                 }
-                //if (student==null)
-                //{
-                //    throw new ArgumentNullException(nameof(student), "The student data provided appears to be invalid or null");
-                //}
-
-
-                //var university = await _dbContext.Universities.FindAsync(student.UniversityId);
-
-                //if (university == null)
-                //{
-                //    throw new ArgumentException("The university ID you provided is invalid. Please enter a valid university ID.");
-                //}
-
-                //var existingStudent = await _dbContext.Students.FirstOrDefaultAsync(s => 
-                //   s.Email == student.Email && s.UniversityId == student.UniversityId);
+               
                 var existingStudent = await _dbContext.Students.FirstOrDefaultAsync(s =>
                   s.Email == student.Email);
 
                 if (existingStudent != null)
                 {
-                    throw new InvalidOperationException($"The student with {student.Email} is already enrolled in this university.");
+                    throw new InvalidOperationException($"The student with {student.Email} is already exist");
                 }
                 await _dbContext.Students.AddAsync(student);
                 await _dbContext.SaveChangesAsync();

@@ -5,6 +5,9 @@
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
+    using System.Security.Cryptography;
+    using System.Text;
+
     public class UserDataService
     {
         private BookStoreContext _dbContext;
@@ -25,41 +28,37 @@
                 throw new Exception(e.Message);
             }
         }
-        public async Task<User> ActiveUserById(int userId)
+        //public async Task<User> GetUserById(int userId)
+        //{
+        //    try
+        //    {
+        //        var user = await _dbContext.Users.FindAsync(userId);
+        //        if (user != null )
+        //        {
+        //            throw new InvalidOperationException("User is inactive");
+        //        }
+        //        else if (user == null)
+        //        {
+        //            throw new ArgumentException("User not found");
+        //        }
+        //        return user;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception(ex.Message) ;
+        //    }
+        //}
+
+        public async Task<User> GetUserById(int userId)
         {
             try
             {
                 var user = await _dbContext.Users.FindAsync(userId);
-                if (user != null && user.IsActive == false)
+                if (user == null)
                 {
-                    throw new InvalidOperationException("User is inactive");
+                    throw new Exception($"User with ID {userId} not found.");
                 }
-                else if (user == null)
-                {
-                    throw new ArgumentException("User not found");
-                }
-                return user;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message) ;
-            }
-        }
-       
-        public async Task<User> AddNewUser(User user)
-        {
-            try
-            {
-                
-                var existingUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
-                if (existingUser != null)
-                {
-                    throw new Exception("User with this email already exists");
-                }
-
                
-                await _dbContext.Users.AddAsync(user);
-                _dbContext.SaveChanges();
                 return user;
             }
             catch (Exception ex)
@@ -70,27 +69,87 @@
 
 
 
+public async Task<User> AddNewUser(User user)
+    {
+        try
+        {
+            var existingUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
+            if (existingUser != null)
+            {
+                throw new Exception("User with this email already exists");
+            }
 
-        public async Task<User> UpdateUser(User user)
+            var password = GenerateRandomPassword();
+
+            var hashedPassword = HashPassword(password);
+
+            user.Password = hashedPassword;
+
+            await _dbContext.Users.AddAsync(user);
+            await _dbContext.SaveChangesAsync();
+
+            user.Password = password;
+            return user;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
+        }
+    }
+
+    private string GenerateRandomPassword()
+    {
+
+        const string allowedChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        var chars = new char[64];
+        using (var rng = new RNGCryptoServiceProvider())
+        {
+            for (var i = 0; i < chars.Length; i++)
             {
-                try
-                {
-                    if (user != null)
-                    {
-                        _dbContext.Entry(user).State = EntityState.Modified;
-                        await  _dbContext.SaveChangesAsync();
-                        return user;
-                    }
-                    else
-                    {
-                        throw new Exception("User not found");
-                    }
-                }
-            catch (Exception ex)
-            {
-                throw new Exception("An error occurred while updating the user's profile", ex);
+                var byteBuffer = new byte[1];
+                rng.GetBytes(byteBuffer);
+                var randomChar = allowedChars[byteBuffer[0] % allowedChars.Length];
+                chars[i] = randomChar;
             }
         }
+        return new string(chars);
+    }
+
+    private string HashPassword(string password)
+    {
+        using (var sha256 = SHA256.Create())
+        {
+            var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+            return Convert.ToBase64String(hashedBytes);
+        }
+    }
+
+
+
+
+
+    public async Task<User> UpdateUser(User user)
+        {
+            try
+            {
+                var existinguser = await _dbContext.Users.FindAsync(user.UserId);
+                if (existinguser != null)
+                {
+                    _dbContext.Entry(existinguser).CurrentValues.SetValues(user);
+                    _dbContext.SaveChanges();
+                    return existinguser;
+                }
+                else
+                {
+                    throw new Exception("User Record Not Found");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
         //public async Task<User> DeleteUser(int userId)
         //{
         //    try

@@ -43,19 +43,20 @@
             }
         }
         [HttpPost]
-        [Route("AddBook")]
+        [Route("AddBooks")]
         public async Task<IActionResult> AddBook(Book book)
         {
             try
             {
-                var addBook = await _bookService.AddBook(book);
-                return Ok(addBook);
+                var addedBook = await _bookService.AddBook(book);
+                return Ok(addedBook);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                return BadRequest(e.Message);
+                return BadRequest(ex.Message);
             }
         }
+
         [HttpPut("UpdateBook")]
         public async Task<IActionResult> UpdateBook([FromBody] Book book)
         {
@@ -70,7 +71,7 @@
                 return NotFound(ex.Message);
             }
         }
-        [HttpDelete("SoftDeleteBook/{id}")]
+        [HttpDelete("DeleteBook/{id}")]
         public async Task<IActionResult> DeleteBook(int id)
         {
             try
