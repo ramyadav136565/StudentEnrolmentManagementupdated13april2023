@@ -67,6 +67,7 @@
         }
 
         [HttpGet("GenerateInvoice/{universityId}/{term}")]
+     
         public async Task<ActionResult<Invoice>> GenerateInvoice(int universityId, int term)
         {
             try
