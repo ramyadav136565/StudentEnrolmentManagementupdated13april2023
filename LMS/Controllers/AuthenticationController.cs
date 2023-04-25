@@ -72,7 +72,7 @@
             catch (Exception e)
             {
 
-                throw new Exception(e.Message);
+                return BadRequest(e.Message);
             }
            
         }
@@ -108,36 +108,3 @@
         }
     }
 }
-
-
-/*
- 
- private IConfiguration _config;
-        private BookStoreContext _dbContext;
-        private AuthenticationDataService _authService;
-        public AuthenticationController(IConfiguration config, AuthenticationDataService authService, BookStoreContext dbContext)
-        {
-            _config = config;
-            _authService = authService;
-            _dbContext = dbContext;
-        }
-
-       
-        private string CreateToken(string userIdOrEmail)
-        {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JwtSettings:Key"]));
-            var CredentialInfo = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var userRole = (from user in _dbContext.Users
-                            join roles in _dbContext.Roles on user.RoleId equals roles.RoleId
-                            where user.UserId.ToString() == userIdOrEmail || user.Email == userIdOrEmail
-                            select roles).FirstOrDefault();
-
-
-            string role = String.Join(" ", userRole);
-
-
-            var claim = new List<Claim>();
-            claim.Add(new Claim(ClaimTypes.Role, role));
- 
- */

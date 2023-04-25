@@ -7,7 +7,8 @@
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    //[Authorize]
+
+    [Authorize(Roles = "Admin")]
     [ApiController]
     public class UserController : ControllerBase
     {
@@ -18,7 +19,7 @@
         }
 
         [HttpGet("ShowAllUsers")]
-       public async Task<IActionResult> ShowAllUsers()
+        public async Task<IActionResult> ShowAllUsers()
         {
             List<User> users;
             try
@@ -31,8 +32,9 @@
                 return BadRequest(e.Message);
             }
         }
+
         [HttpGet("GetUserById/{userId}")]
-      
+
         public async Task<IActionResult> GetUserById(int userId)
         {
             try
@@ -45,6 +47,7 @@
                 return BadRequest(e.Message);
             }
         }
+
         [HttpPost]
         [Route("AddNewUser")]
         public async Task<IActionResult> AddNewUser(User user)
@@ -59,6 +62,7 @@
                 return BadRequest(e.Message);
             }
         }
+
         [HttpPut("UpdateUser")]
         public async Task<IActionResult> UpdateUser([FromBody] User user)
         {
@@ -73,6 +77,7 @@
                 return NotFound(ex.Message);
             }
         }
+
         [HttpDelete("DeleteUser/{userId}")]
         public async Task<IActionResult> DeleteUser(int userId)
         {

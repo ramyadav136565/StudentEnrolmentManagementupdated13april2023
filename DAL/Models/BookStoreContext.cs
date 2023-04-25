@@ -9,14 +9,14 @@ namespace DAL.Models
 {
     public partial class BookStoreContext : DbContext
     {
-      
+
 
         private IConfiguration _config;
-      
+
         public BookStoreContext(IConfiguration config)
         {
             _config = config;
-               
+
         }
 
 
@@ -34,14 +34,6 @@ namespace DAL.Models
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<UserRole> UserRoles { get; set; }
 
-        //        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        //        {
-        //            if (!optionsBuilder.IsConfigured)
-        //            {
-        //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-        //                optionsBuilder.UseSqlServer("Server=INBLRVM26590142; Database=BookStore; Trusted_Connection=true");
-        //            }
-        //        }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -57,7 +49,8 @@ namespace DAL.Models
             modelBuilder.Entity<Book>(entity =>
             {
                 entity.ToTable("Book");
-
+                    entity.HasKey(e => e.BookId)
+                    .HasName("PK__Book__3DE0C207FA1C8F23");
                 entity.Property(e => e.BookAuthor)
                     .IsRequired()
                     .HasMaxLength(100)
@@ -75,15 +68,13 @@ namespace DAL.Models
 
                 entity.Property(e => e.IsDeleted).HasDefaultValueSql("((0))");
             });
-
             modelBuilder.Entity<BookAllocation>(entity =>
             {
-                entity.HasKey(e => e.SerialNo)
-                    .HasName("PK__BookAllo__D1FEA253C6383470");
-
                 entity.ToTable("BookAllocation");
+                entity.HasKey(e => e.Id)
+                    .HasName("PK__BookAllo__3213E83F0E607D56");
 
-                entity.Property(e => e.SerialNo).HasColumnName("serialNo");
+                entity.Property(e => e.Id).HasColumnName("id");
 
                 entity.Property(e => e.BookId).HasColumnName("bookId");
 
@@ -95,45 +86,20 @@ namespace DAL.Models
                     .WithMany(p => p.BookAllocations)
                     .HasForeignKey(d => d.BookId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__BookAlloc__bookI__32AB8735");
+                    .HasConstraintName("FK__BookAlloc__bookI__4F47C5E3");
 
                 entity.HasOne(d => d.Student)
                     .WithMany(p => p.BookAllocations)
                     .HasForeignKey(d => d.StudentId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__BookAlloc__stude__31B762FC");
+                    .HasConstraintName("FK__BookAlloc__stude__4E53A1AA");
 
                 entity.HasOne(d => d.University)
                     .WithMany(p => p.BookAllocations)
                     .HasForeignKey(d => d.UniversityId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__BookAlloc__unive__339FAB6E");
+                    .HasConstraintName("FK__BookAlloc__unive__503BEA1C");
             });
-
-            //modelBuilder.Entity<Invoice>(entity =>
-            //{
-            //    entity.ToTable("invoice");
-
-            //    entity.Property(e => e.InvoiceId).HasColumnName("invoiceId");
-
-            //    entity.Property(e => e.Term).HasColumnName("term");
-
-            //    entity.Property(e => e.Tax)
-            //        .HasColumnType("decimal(10, 2)")
-            //        .HasColumnName("tax");
-
-            //    entity.Property(e => e.TotalAmount)
-            //        .HasColumnType("decimal(10, 2)")
-            //        .HasColumnName("totalAmount");
-
-            //    entity.Property(e => e.UniversityId).HasColumnName("universityId");
-
-            //    entity.HasOne(d => d.University)
-            //        .WithMany(p => p.Invoices)
-            //        .HasForeignKey(d => d.UniversityId)
-            //        .OnDelete(DeleteBehavior.ClientSetNull)
-            //        .HasConstraintName("FK__invoice__univers__40F9A68C");
-            //});
 
             modelBuilder.Entity<Invoice>(entity =>
             {
@@ -279,3 +245,5 @@ namespace DAL.Models
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
     }
 }
+
+

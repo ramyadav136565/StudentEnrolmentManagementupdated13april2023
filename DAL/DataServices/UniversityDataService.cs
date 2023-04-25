@@ -26,44 +26,8 @@
                 throw new Exception(e.Message);
             }
         }
-         //active university
-        //public async Task<List<University>> ShowAllUniversities()
-        //{
-        //    try
-        //    {
-        //        var universities = await _dbContext.Universities
-        //            .Where(u => !u.IsDeleted)
-        //            .ToListAsync();
-        //        return universities;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception(ex.Message);
-        //    }
-        //}
 
-        //public async Task<University> SearchUniversityByuniversityId(int universityId)
-        //{
-        //    try
-        //    {
-        //        var university = await _dbContext.Universities.FindAsync(universityId);
-        //        if (university == null)
-        //        {
-        //            throw new Exception("University record not found");
-        //        }
-        //        //if (university.IsDeleted)
-        //        //{
-        //        //    throw new ArgumentException("Sorry, the university you are looking for is no longer active");
-        //        //}
-        //        return university;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception("An error occurred while searching for the university", ex);
-        //    }
-        //}
-
-        public async Task<University> SearchUniversityById(int universityId)
+       public async Task<University> SearchUniversityById(int universityId)
         {
             try
             {
@@ -126,31 +90,6 @@
             }
         }
 
-        //public async Task<University> DeleteUniversity(int universityId)
-        //{
-        //    try
-        //    {
-        //        var university = await _dbContext.Universities.FindAsync(universityId);
-        //        if (university != null && university.IsDeleted == false)
-        //        {
-        //            university.IsDeleted = true;
-        //            await _dbContext.SaveChangesAsync();
-        //            return university;
-        //        }
-        //        else if (university == null)
-        //        {
-        //            throw new Exception($"University with ID {universityId} not found");
-        //        }
-        //        else
-        //        {
-        //            throw new Exception($"University with ID {universityId} is already deleted");
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception(ex.Message);
-        //    }
-        //}
         public async Task<string> DeleteUniversity(int universityId)
         {
             try

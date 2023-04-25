@@ -3,19 +3,18 @@
     using DAL.Models;
     using Microsoft.EntityFrameworkCore;
     using System;
-    using System.Linq;
+    using System.Security.Cryptography;
     using System.Text;
     using System.Threading.Tasks;
-    using System.Security.Cryptography;
-    
+
     public class AuthenticationDataService
     {
         private BookStoreContext _dbContext;
+
         public AuthenticationDataService(BookStoreContext dbContext)
         {
             this._dbContext = dbContext;
         }
- 
 
         public async Task<User> ValidateUser(string userIdOrEmail, string password)
         {
@@ -25,11 +24,12 @@
                 var validuser = await _dbContext.Users.FirstOrDefaultAsync(c => c.UserId.ToString() == userIdOrEmail || c.Email == userIdOrEmail);
                 if (validuser == null)
                 {
-                    throw new Exception("Username and password are required fields");
+                    throw new Exception("Invalid login credentials");
                 }
-               
+
                 else if (GetHash(password) == validuser.Password)
-                { if (validuser.IsActive == true)
+                {
+                    if (validuser.IsActive == true)
                     {
                         user.FullName = validuser.FullName;
                         user.Email = validuser.Email;
@@ -40,20 +40,16 @@
                         throw new Exception("Your account is currently inactive. Please contact an administrator to reactivate your account.");
                     }
                 }
-                else 
+                else
                 {
                     throw new Exception("Invalid login credentials. Please try again");
                 }
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                throw new Exception(e.Message);
+                throw new Exception(ex.Message);
             }
         }
-         
-         
-         
-
 
         public async Task<User> RegisterUser(string userIdOrEmail, string password)
         {
@@ -62,9 +58,9 @@
                 var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.UserId.ToString() == userIdOrEmail || u.Email == userIdOrEmail);
                 if (user == null)
                 {
-                    throw new Exception("Invalid username or password");
+                    throw new Exception("Invalid email address");
                 }
-                
+
                 var passwordHash = GetHash(password);
                 user.Password = passwordHash;
                 await _dbContext.SaveChangesAsync();
@@ -75,7 +71,6 @@
                 throw new Exception(ex.Message);
             }
         }
-
 
         private string GetHash(string password)
         {
@@ -90,6 +85,5 @@
             }
             return result.ToString();
         }
-
     }
 }

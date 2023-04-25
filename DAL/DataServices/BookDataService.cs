@@ -26,21 +26,7 @@
                 throw new Exception(e.Message);
             }
         }
-        //Only show not deleted book
-        //public async Task<List<Book>> ShowAllBooks()
-        //{
-        //    List<Book> bookList;
-        //    try
-        //    {
-        //        bookList = await _dbContext.Books.Where(b => !b.IsDeleted).ToListAsync();
-        //        return bookList;
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        throw new Exception(e.Message);
-        //    }
-        //}
-
+    
         public async Task<Book> GetBookById(int bookId)
         {
             try

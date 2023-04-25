@@ -34,11 +34,6 @@ namespace StudentEnrolmentManagement
             services.AddTransient(typeof(UniversityDataService));
             services.AddTransient(typeof(BookAllocationDataService));
             services.AddTransient(typeof(AuthenticationDataService));
-            //services.AddControllers().AddJsonOptions(options =>
-            //{
-            //    options.JsonSerializerOptions.MaxDepth = 64; 
-            //});
-
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "myapp", Version = "v1" });

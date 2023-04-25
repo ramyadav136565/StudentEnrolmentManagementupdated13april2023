@@ -2,10 +2,12 @@
 {
     using DAL;
     using DAL.Models;
+    using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
+    [Authorize]
     public class BookController : ControllerBase
     {
         private readonly BookDataService _bookService;

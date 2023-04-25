@@ -111,23 +111,6 @@
             }
         }
 
-        //public async Task<Student> DeleteStudent(int studentId)
-        //{
-        //    try
-        //    {
-        //        var student = await _dbContext.Students.FindAsync(studentId);
-
-        //            _dbContext.Students.Remove(student);
-        //            await _dbContext.SaveChangesAsync();
-        //            return student;
-
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception("An error occurred while deleting the student record", ex);
-        //    }
-        //}
-
         public async Task<string> DeleteStudent(int studentId)
         {
             try

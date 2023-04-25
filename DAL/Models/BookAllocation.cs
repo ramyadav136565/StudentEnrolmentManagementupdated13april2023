@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 #nullable disable
 
@@ -7,7 +8,8 @@ namespace DAL.Models
 {
     public partial class BookAllocation
     {
-        public int SerialNo { get; set; }
+        [Key]
+        public int Id { get; set; }
         public int StudentId { get; set; }
         public int BookId { get; set; }
         public int UniversityId { get; set; }

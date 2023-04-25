@@ -2,10 +2,14 @@
 {
     using DAL;
     using DAL.Models;
+    using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
     using System;
     using System.Collections.Generic;
+    using System.IO;
+    using System.Text;
     using System.Threading.Tasks;
+    [Authorize(Roles = "Admin")]
     [ApiController]
     public class InvoiceController : ControllerBase
     {
@@ -32,12 +36,12 @@
         }
 
         [HttpGet]
-        [Route("GetInvoiceDetails/{InvoiceId}")]
-        public async Task<IActionResult> GetInvoiceDetails(int invoiceId)
+        [Route("GetInvoiceDetailsById/{InvoiceId}")]
+        public async Task<IActionResult> GetInvoiceDetailsById(int invoiceId)
         {
             try
             {
-                var invoice = await _invoiceService.GetInvoiceDetails(invoiceId);
+                var invoice = await _invoiceService.GetInvoiceDetailsById(invoiceId);
                 return Ok(invoice);
             }
             catch (Exception e)
@@ -47,12 +51,12 @@
         }
 
         [HttpPost]
-        [Route("CreateInvoice")]
-        public async Task<IActionResult> CreateInvoice(int universityId ,int semester)
+        [Route("CreateInvoice/{universityId}/{semester}")]
+        public async Task<IActionResult> CreateInvoice(int universityId, int semester)
         {
             try
             {
-                var invoices = await _invoiceService.CreateInvoice(universityId,  semester ); //change local variable name
+                var invoices = await _invoiceService.CreateInvoice(universityId, semester); //change local variable name
                 return Ok(invoices);
 
             }
@@ -62,15 +66,15 @@
             }
         }
 
-        [HttpGet("GenerateInvoice/{universityId}/{semester}")]
-        public async Task<ActionResult<Invoice>> GenerateInvoice(int universityId, int semester)
+        [HttpGet("GenerateInvoice/{universityId}/{term}")]
+        public async Task<ActionResult<Invoice>> GenerateInvoice(int universityId, int term)
         {
             try
             {
-                var invoice = await _invoiceService.GenerateInvoice(universityId, semester);
+                var invoice = await _invoiceService.GenerateInvoice(universityId, term);
                 return Ok(invoice);
             }
-            
+
             catch (Exception ex)
             {
                 // Log the exception here
@@ -92,12 +96,25 @@
                 return BadRequest(e.Message);
             }
         }
+        [HttpGet]
+        [Route("invoices/{invoiceId}")]
+        public async Task<IActionResult> DownloadCSV(int invoiceId)
+        {
+            try
+            {
+                var invoiceDetails = await _invoiceService.GetInvoiceDetails(invoiceId);
+                var csvString = await _invoiceService.ConvertInvoiceDetailsToCSV(invoiceDetails);
+                var bytes = Encoding.UTF8.GetBytes(csvString);
+                var stream = new MemoryStream(bytes);
 
-        //[HttpGet("totalamount")]
-        //public async Task<ActionResult<decimal>> GetTotalAmount(string universityIdOrUniversityName, int semester, decimal taxPercentage)
-        //{
-        //    var totalAmount = await _invoiceService.CalculateTotalAmountForUniversity(universityIdOrUniversityName, semester, taxPercentage);
-        //    return totalAmount;
-        //}
+                return File(stream, "text/csv", "InvoiceDetails.csv");
+            }
+            catch (Exception ex)
+            {
+                // Handle the exception here, for example log it or return an error message
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                return BadRequest("An error occurred while generating the CSV file.");
+            }
+        }
     }
 }

@@ -7,7 +7,7 @@
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
-   // [Authorize(Roles="Admin")]
+    [Authorize]
     [ApiController]
     public class StudentController : ControllerBase
     {
